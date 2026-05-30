@@ -1,0 +1,67 @@
+Two targeted fixes. Do not touch anything else.
+
+---
+
+FIX 1 — REPLACE ALL RANGE SLIDERS WITH A CUSTOM STEPPER COMPONENT
+
+The native <input type="range"> is not registering drag events reliably in this project.
+Replace every slider in ControlsPanel.tsx with a new custom component called <StepperSlider>.
+
+Create src/components/StepperSlider.tsx with this behavior:
+
+LAYOUT (left to right):
+  [Label + auto badge if applicable]                    [Current Value]
+  [  −  ] [━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━] [  +  ]
+
+- The − and + buttons decrement/increment by the step value on each click
+- Hold down the button: repeat every 80ms (use setInterval on mousedown, clear on mouseup/mouseleave)
+- The bar in the middle is a visual-only progress indicator (a div with width proportional to value position) — it is NOT interactive, purely decorative
+- Below the bar: an optional subtext line (for "Estimated years of your life: X.X years")
+- The user can also click directly on the numeric value label to turn it into an <input type="number"> for direct keyboard entry. On blur or Enter: validate the value is within [min, max], clamp if not, and apply
+
+PROPS:
+  value: number
+  min: number
+  max: number
+  step: number
+  onChange: (value: number) => void
+  label: string
+  sublabel?: string        // e.g. "Estimated years of your life: X.X years"
+  isAutoDefault?: boolean  // shows the "auto" badge if true
+  isModified?: boolean     // highlights if user has changed from default
+  categoryColor?: string   // color of the progress bar fill and +/- button accent
+
+STYLING:
+- − and + buttons: 32×32px, rounded, border in categoryColor, text in categoryColor
+- Progress bar: 6px height, background in muted gray, fill in categoryColor, border-radius 3px
+- Current value: bold, 16px, monospace, right-aligned, in categoryColor if isModified
+- Entire component: same width as current sliders
+
+Replace every existing <input type="range"> / CustomSlider usage in ControlsPanel.tsx with <StepperSlider>.
+Map all existing props (value, min, max, step, onChange, label, tooltip, sublabel, isAuto, isModified, categoryColor) to the new component.
+
+---
+
+FIX 2 — EDUCATION HOURS DISPLAY CLARIFICATION
+
+The math is correct: 13,860 instruction hours ÷ 8,760 = 1.58 years of continuous equivalent time.
+But displaying "1.6 years" confuses users who think "I spent 13 years in school."
+
+Change the display line below the education buttons from:
+  "Total education time: 13,860 hours (1.6 years)"
+
+To:
+  "Total education time: 13,860 instruction hours across 13 calendar years"
+
+Where "13 calendar years" is calculated as the SUM of the years property of all active education levels
+(not hours ÷ 8760). Show this as an integer.
+
+In the stat card for "In School" in StatsPanel.tsx, also update the subtext to clarify:
+  Old: "15,210 hours"
+  New: "15,210 instruction hours (13 calendar years)"
+  Perspective line below: keep as-is ("X PhD programs worth of study time")
+
+---
+
+Output: ✅ Fix 1 complete, ✅ Fix 2 complete
+List every file created or modified.

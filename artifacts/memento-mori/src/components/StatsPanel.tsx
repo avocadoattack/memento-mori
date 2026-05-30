@@ -114,7 +114,8 @@ export function StatsPanel({ stats }: Props) {
         />
         <StatCard
           title="In School" value={stats.schoolHours_total} color="var(--cat-school)"
-          perspectiveLine={`${stats.schoolHours_total.toLocaleString(undefined, {maximumFractionDigits:0})} hours = ${(stats.schoolHours_total/3500).toFixed(1)} PhD programs worth of study time (PhD ≈ 3,500 hrs)`}
+          perspectiveLine={`${stats.schoolHours_total.toLocaleString(undefined, {maximumFractionDigits:0})} instruction hours (${stats.schoolCalendarYears ?? 0} calendar years)`}
+          secondaryPerspective={`${(stats.schoolHours_total/3500).toFixed(1)} PhD programs worth of study time (PhD ≈ 3,500 hrs)`}
         />
         <StatCard
           title="Eating & Cooking" value={stats.eatingHours_total} color="var(--cat-eating)"

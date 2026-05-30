@@ -1,5 +1,5 @@
 import React from 'react';
-import { CustomSlider } from './CustomSlider';
+import { StepperSlider } from './StepperSlider';
 import { LIFE_EXPECTANCY } from '../lib/lifeExpectancy';
 import { EDUCATION_LEVELS } from '../lib/educationLevels';
 import { Info, User, Moon, Briefcase, GraduationCap, Coffee, Car, Smartphone } from 'lucide-react';
@@ -21,41 +21,35 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
   );
 
   const ControlRow = ({
-    label, value, min, max, step, onChange, color, tooltip, name
+    label, value, min, max, step, onChange, color, tooltip, name, sublabel
   }: any) => {
     const isOverridden = state.overrides[name];
     const isAuto = ['workHoursPerWeek', 'workStartAge', 'retirementAge', 'socialMediaHoursPerDay', 'tvHoursPerDay', 'streamingHoursPerDay'].includes(name) && !isOverridden;
 
     return (
-      <div className="mb-5">
-        <div className="flex justify-between items-center mb-2">
-          <label className="text-sm font-semibold flex items-center gap-1.5">
-            {isOverridden && <span className="text-[var(--accent)] text-[10px]">●</span>}
-            {label}
-            {isAuto && <span className="px-1.5 py-0.5 bg-foreground/10 text-foreground/70 text-[10px] uppercase font-bold rounded">Auto</span>}
-            {tooltip && (
-              <Tooltip>
-                <TooltipTrigger>
-                  <Info className="w-3.5 h-3.5 opacity-40 hover:opacity-100 transition-opacity" />
-                </TooltipTrigger>
-                <TooltipContent className="max-w-[200px] text-xs">
-                  {tooltip}
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </label>
-          <span className="font-mono text-sm font-bold opacity-70">
-            {value < 10 && step < 1 ? value.toFixed(1) : Math.round(value)}
-          </span>
-        </div>
-        <CustomSlider value={value} min={min} max={max} step={step} onChange={onChange} color={color} isOverridden={isOverridden} />
-      </div>
+      <StepperSlider
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        onChange={onChange}
+        label={label}
+        sublabel={sublabel}
+        isAutoDefault={isAuto}
+        isModified={isOverridden}
+        categoryColor={color}
+        tooltip={tooltip}
+      />
     );
   };
 
   const eduTotalHours = EDUCATION_LEVELS
     .filter((l: typeof EDUCATION_LEVELS[0]) => state.selectedEducationLevels.includes(l.id))
     .reduce((sum: number, l: typeof EDUCATION_LEVELS[0]) => sum + l.years * l.daysPerYear * l.hoursPerDay, 0);
+
+  const eduCalendarYears = EDUCATION_LEVELS
+    .filter((l: typeof EDUCATION_LEVELS[0]) => state.selectedEducationLevels.includes(l.id))
+    .reduce((sum: number, l: typeof EDUCATION_LEVELS[0]) => sum + l.years, 0);
 
   return (
     <div className="bg-card border border-border p-5 md:p-6 shadow-sm overflow-hidden h-full flex flex-col">
@@ -173,7 +167,7 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
           })}
         </div>
         <div className="text-xs font-bold opacity-50 mb-4">
-          Total education time: {Math.round(eduTotalHours).toLocaleString()} hours ({(eduTotalHours / 8760).toFixed(1)} years)
+          Total education time: {Math.round(eduTotalHours).toLocaleString()} instruction hours across {eduCalendarYears} calendar years
         </div>
 
         <SectionTitle icon={Coffee}>Daily Habits (Hours/Day)</SectionTitle>
