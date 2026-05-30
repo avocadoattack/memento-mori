@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useLifeCalc } from '../hooks/useLifeCalc';
 import { ThemeToggle } from '../components/ThemeToggle';
@@ -6,10 +6,44 @@ import { Countdown } from '../components/Countdown';
 import { LifeGrid } from '../components/LifeGrid';
 import { ControlsPanel } from '../components/ControlsPanel';
 import { StatsPanel } from '../components/StatsPanel';
+import { Quiz } from '../components/Quiz';
 import { EDUCATION_LEVELS } from '../lib/educationLevels';
 
 export default function Home() {
-  const { state, lifeExpectancy, stats } = useLifeCalc();
+  const calc = useLifeCalc();
+  const { state, lifeExpectancy, stats } = calc;
+
+  const [stage, setStage] = useState<'quiz' | 'app'>(() => {
+    try {
+      return sessionStorage.getItem('quiz_completed') === 'true' ? 'app' : 'quiz';
+    } catch {
+      return 'quiz';
+    }
+  });
+  const [quizExiting, setQuizExiting] = useState(false);
+  const [appVisible, setAppVisible] = useState(() => stage === 'app');
+  const transitioningRef = useRef(false);
+
+  const goToApp = (markCompleted: boolean) => {
+    if (transitioningRef.current) return;
+    transitioningRef.current = true;
+    if (markCompleted) {
+      try {
+        sessionStorage.setItem('quiz_completed', 'true');
+      } catch {
+        // sessionStorage may be unavailable (private mode / blocked) — proceed without persistence
+      }
+    }
+    setQuizExiting(true);
+    setTimeout(() => setStage('app'), 400);
+  };
+
+  // Fade the main app in once the quiz has transitioned away.
+  useEffect(() => {
+    if (stage !== 'app' || appVisible) return;
+    const id = requestAnimationFrame(() => setAppVisible(true));
+    return () => cancelAnimationFrame(id);
+  }, [stage, appVisible]);
 
   // Fix 4: --dvh tracks actual visible viewport height (excludes browser chrome, Replit banner, etc.)
   useEffect(() => {
@@ -24,6 +58,17 @@ export default function Home() {
     };
   }, []);
 
+  if (stage === 'quiz') {
+    return (
+      <Quiz
+        calc={calc}
+        exiting={quizExiting}
+        onComplete={() => goToApp(true)}
+        onSkip={() => goToApp(false)}
+      />
+    );
+  }
+
   const schoolCalendarYears = EDUCATION_LEVELS
     .filter(l => state.selectedEducationLevels.includes(l.id))
     .reduce((sum, l) => sum + l.years, 0);
@@ -31,7 +76,10 @@ export default function Home() {
   const augmentedStats = { ...stats, schoolCalendarYears };
 
   return (
-    <div className="min-h-[100dvh] font-sans bg-background text-foreground selection:bg-accent selection:text-white transition-colors duration-250 ease-out">
+    <div
+      className="min-h-[100dvh] font-sans bg-background text-foreground selection:bg-accent selection:text-white transition-colors duration-250 ease-out"
+      style={{ opacity: appVisible ? 1 : 0, transition: 'opacity 0.5s ease' }}
+    >
       <ThemeToggle />
 
       {/* Hero Section — full viewport height, content vertically centered */}
