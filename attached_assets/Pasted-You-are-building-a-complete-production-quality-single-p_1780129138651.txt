@@ -1,0 +1,272 @@
+You are building a complete, production-quality single-page web app in React + Vite called **Memento Mori: Time Audit** — a darkly motivational interactive calculator that shows how little discretionary time a person actually has in their lifetime after subtracting obligatory and habitual activities.
+
+---
+
+## TECH STACK
+
+- React + Vite
+- GSAP (GreenSock) for all animations — install via npm
+- Tailwind CSS for layout and utilities
+- lucide-react for icons
+- No backend. No database. All state is in-memory React state.
+
+---
+
+## THEME SYSTEM
+
+Implement dual light/dark theming using this priority chain:
+1. Request the browser's Geolocation API on load.
+2. If granted: calculate local sunrise and sunset using the SunCalc algorithm (hardcode the math inline — no external library). Switch to dark mode after sunset, light before sunrise.
+3. If denied or times out after 3s: fall back to `prefers-color-scheme`.
+4. Always show a manual sun/moon toggle button in the top-right corner.
+5. All color transitions: 0.4s CSS ease on background, text, and border colors.
+
+Design tokens:
+- Light: bg #F5F0E8, text #1A1A1A, card bg #FFFFFF, accent #E63946
+- Dark: bg #0D0D0D, text #F0EDE6, card bg #1A1A1A, accent #FF4D5E
+- Category colors (same in both themes):
+  - Sleep: #3A86FF
+  - Work: #FF006E
+  - School: #FFBE0B
+  - Eating: #06D6A0
+  - Grooming: #8338EC
+  - Commute: #FB5607
+  - Chores: #4CC9F0
+  - Social Media: #F72585
+  - TV: #9B5DE5
+  - Free Time: #00F5D4
+
+---
+
+## LAYOUT
+
+Three-panel layout on desktop (≥1024px), stacked single column on mobile.
+
+### 1. HERO SECTION (top, full width)
+
+Large bold headline: "YOUR LIFE IN WEEKS"
+Subhead: "After sleep, work, and everything else — here's what's actually left."
+
+Below that: a real-time **Countdown to Death** clock. This is the most visceral element — make it prominent. It shows:
+
+`[Y] years  [M] months  [W] weeks  [D] days  [H] hours  [Min] minutes  [S] seconds`
+
+Calculate it as: (birth date derived from current age + life expectancy) minus now. Tick every second using setInterval. Animate seconds with a GSAP flip/fade on each tick. Style it like a dramatic countdown clock — large monospace numerals, slight red tint.
+
+Below the countdown: a secondary GSAP-animated counter: "Free Hours Remaining: [X,XXX,XXX]" that updates in real time as inputs change.
+
+### 2. LIFE GRID (center panel)
+
+A grid where each square = 1 week of life. Total squares = life expectancy × 52.
+- Each square is 7×7px with 1.5px gap, sharp corners (no border radius).
+- Color each square with the dominant time category for that week (use proportional logic — whichever category consumes the most hours in that life stage owns the square color).
+- Past weeks (age already lived) render desaturated/faded at 25% opacity.
+- The current week pulses with GSAP (scale 1→1.12→1, yoyo, repeat, 2s duration).
+- On hover: tooltip showing "Week [N] · Age [X] · [Y]h free this week".
+- On load: squares stagger in with GSAP from opacity 0, left-to-right, top-to-bottom, 0.003s delay per square.
+
+### 3. CONTROLS PANEL (right sidebar on desktop, below grid on mobile)
+
+Sliders with live numeric inputs. Group visually with bold section headers.
+
+---
+
+**YOUR PROFILE**
+
+- Current Age (default: 30, range: 1–90, integer)
+- Gender: Male / Female toggle — this determines which life expectancy value is used from the country dataset
+- Country: searchable dropdown, ~60 major countries — auto-detected on load via IP geolocation using `https://ipapi.co/json/` (free, no key required). Falls back to "World Average" if detection fails. Selecting country + gender auto-sets Life Expectancy.
+- Life Expectancy: shows as a read-only calculated field based on Country + Gender selection. Allow manual override with a small "Override" toggle that unlocks the field (range: 50–120, step 0.1).
+
+Hardcode this life expectancy lookup table (UN World Population Prospects 2024 data) directly in the app as a JS object:
+
+```js
+const lifeExpectancy = {
+  "Japan":        { male: 81.3, female: 87.1 },
+  "Switzerland":  { male: 82.0, female: 85.7 },
+  "South Korea":  { male: 80.3, female: 86.1 },
+  "Singapore":    { male: 81.6, female: 86.1 },
+  "Australia":    { male: 81.3, female: 85.2 },
+  "Spain":        { male: 80.9, female: 86.3 },
+  "Italy":        { male: 81.2, female: 85.1 },
+  "France":       { male: 80.1, female: 85.7 },
+  "Sweden":       { male: 81.5, female: 84.7 },
+  "Norway":       { male: 81.3, female: 84.6 },
+  "Netherlands":  { male: 80.6, female: 83.6 },
+  "Germany":      { male: 78.7, female: 83.4 },
+  "Austria":      { male: 79.6, female: 84.1 },
+  "Belgium":      { male: 79.6, female: 83.8 },
+  "Portugal":     { male: 78.7, female: 84.2 },
+  "Greece":       { male: 79.0, female: 83.9 },
+  "Ireland":      { male: 80.5, female: 83.8 },
+  "Denmark":      { male: 79.9, female: 83.3 },
+  "Finland":      { male: 79.0, female: 83.6 },
+  "United Kingdom": { male: 79.4, female: 83.2 },
+  "Canada":       { male: 80.0, female: 84.1 },
+  "United States":{ male: 76.5, female: 81.4 },
+  "New Zealand":  { male: 80.5, female: 83.8 },
+  "Israel":       { male: 81.2, female: 84.6 },
+  "Iceland":      { male: 81.5, female: 84.8 },
+  "Luxembourg":   { male: 80.6, female: 84.0 },
+  "Chile":        { male: 77.3, female: 82.8 },
+  "Costa Rica":   { male: 77.8, female: 82.7 },
+  "Cuba":         { male: 76.6, female: 80.6 },
+  "Argentina":    { male: 73.8, female: 80.3 },
+  "Brazil":       { male: 72.8, female: 79.9 },
+  "Mexico":       { male: 72.5, female: 78.4 },
+  "Colombia":     { male: 73.6, female: 79.7 },
+  "China":        { male: 75.0, female: 79.5 },
+  "Thailand":     { male: 73.9, female: 80.8 },
+  "Vietnam":      { male: 71.7, female: 77.4 },
+  "Indonesia":    { male: 70.5, female: 74.8 },
+  "Philippines":  { male: 69.5, female: 75.9 },
+  "India":        { male: 68.5, female: 71.4 },
+  "Turkey":       { male: 75.7, female: 81.1 },
+  "Russia":       { male: 68.0, female: 78.2 },
+  "Poland":       { male: 74.5, female: 81.8 },
+  "Czech Republic": { male: 76.7, female: 81.9 },
+  "Romania":      { male: 72.5, female: 79.1 },
+  "Ukraine":      { male: 67.5, female: 76.1 },
+  "South Africa": { male: 61.5, female: 67.8 },
+  "Nigeria":      { male: 54.4, female: 56.0 },
+  "Egypt":        { male: 70.3, female: 74.1 },
+  "Morocco":      { male: 74.5, female: 77.8 },
+  "Ethiopia":     { male: 65.7, female: 70.5 },
+  "Kenya":        { male: 63.8, female: 68.5 },
+  "Saudi Arabia": { male: 75.3, female: 78.2 },
+  "UAE":          { male: 78.0, female: 80.4 },
+  "Iran":         { male: 74.4, female: 77.9 },
+  "Pakistan":     { male: 67.0, female: 68.5 },
+  "Bangladesh":   { male: 71.6, female: 75.0 },
+  "World Average":{ male: 71.1, female: 75.9 }
+}
+```
+
+Source attribution: display "Source: UN WPP 2024" as a small footnote near the life expectancy field.
+
+---
+
+**SLEEP**
+- Hours per night (default: 8.0, range: 4–12, step 0.5)
+
+**WORK**
+- Hours per week (default: 40, range: 0–80, step 1)
+- Work start age (default: 22, range: 16–30)
+- Retirement age (default: 65, range: 40–85)
+
+**EDUCATION**
+- Years of schooling (default: 13 for K–12, range: 0–25, step 1) — label: "K–12 = 13 yrs · +College = 17 yrs"
+- Hours per school day (default: 6.5, range: 4–10, step 0.5)
+
+**DAILY HABITS** (applied across full lifespan)
+- Eating + food prep (default: 1.5h/day, range: 0.5–4, step 0.25) — tooltip: "US avg ~67min eating + ~30min food prep"
+- Grooming & hygiene (default: 0.75h/day, range: 0.25–2, step 0.25) — tooltip: "Shower, dressing, bathroom"
+- Household chores (default: 1.5h/day, range: 0–4, step 0.25) — tooltip: "BLS American Time Use Survey avg: ~1.5h/day"
+
+**COMMUTE** (applied only during working years)
+- Round-trip commute (default: 0.87h/day, range: 0–4, step 0.25) — tooltip: "US Census avg: ~52 min/day round trip"
+
+**TIME WASTERS**
+
+These two sliders should show a secondary label: "Estimated years of your life: [X.X years]" that updates live.
+
+Social media & doomscrolling — default varies by current age entered by user using this research-backed table (source: Gallup 2024, DemandSage 2026, Statista):
+
+Age 13–14: default 4.3h/day
+Age 15–17: default 5.3h/day
+Age 18–24: default 3.1h/day  (186 min — Statista via DemandSage 2026)
+Age 25–34: default 2.3h/day  (140 min)
+Age 35–44: default 2.1h/day  (127 min)
+Age 45–54: default 2.2h/day  (130 min)
+Age 55–64: default 2.1h/day  (128 min)
+Age 65+:   default 1.7h/day  (102 min)
+Global average across all adults: 2h 21min/day (141 min — DemandSage 2026)
+US average: 2h 9min/day (129 min)
+
+When the user changes their age, the default for this slider updates to match the age bracket. Range: 0–8h, step 0.25. Show a tooltip: "Source: Gallup 2024, DemandSage 2026 / Global avg: 2h 21min · US avg: 2h 9min / Teen avg (13–19): 4.8h/day"
+
+Passive TV watching (default: 3.5h/day, range: 0–10, step 0.25) — tooltip: "BLS American Time Use Survey: US avg ~3.5h/day"
+
+---
+
+## STATS PANEL (below the grid, full width — 4-column card grid)
+
+Each stat is a card with a large animated number + small label. Use GSAP CountTo (0.6s ease) whenever any input changes.
+
+Cards to show:
+1. **Total Life Hours** — lifeExpectancy × 365.25 × 24
+2. **Sleeping** — sleepHours × 365.25 × lifeExpectancy
+3. **Working** — workHours/week × 52 × (retirementAge − workStartAge)
+4. **In School** — schoolYears × 180 × schoolHoursPerDay
+5. **Eating & Cooking** — eatingHours × 365.25 × lifeExpectancy
+6. **Grooming** — groomingHours × 365.25 × lifeExpectancy
+7. **Chores** — choresHours × 365.25 × lifeExpectancy
+8. **Commuting** — commuteHours × 260 × (retirementAge − workStartAge)
+9. **Social Media** — socialMediaHours × 365.25 × lifeExpectancy
+10. **Passive TV** — tvHours × 365.25 × lifeExpectancy
+11. **TOTAL TAKEN** — sum of cards 2–10 (bold, red tint)
+12. **FREE HOURS** — Total − Total Taken (largest card, accent color, most prominent)
+13. **FREE YEARS** — Free Hours ÷ 8760
+14. **FREE WEEKS** — Free Hours ÷ 168
+15. **% Life That's Yours** — Free Hours ÷ Total Life Hours × 100
+
+If Free Hours goes negative: show a red banner warning "Your habits leave you with no free time. Something has to give." Do not crash the UI.
+
+---
+
+## MOTIVATIONAL COPY
+
+A dynamically generated line below the stats that updates based on "% Life That's Yours":
+- Below 5%: "You are essentially living for everyone and everything except yourself."
+- 5–10%: "Less than one hour in ten belongs to you. The clock is already running."
+- 10–20%: "Only [X]% of your waking life is discretionary. Use it like it's scarce — because it is."
+- 20–35%: "You have more than most. The question is what you'll build with it."
+- Above 35%: "You have unusual freedom. Most people don't. Treat that as the obligation it is."
+
+---
+
+## ANIMATIONS (GSAP)
+
+- Load: hero countdown and free hours counter animate in over 2.5s with ease-out
+- Life grid: squares stagger in from opacity 0 with 0.003s per square delay, left-to-right wave
+- Current week: slow pulse (scale 1 → 1.12 → 1, yoyo, repeat, 2s)
+- Countdown seconds: GSAP flip/fade transition on each tick (the seconds digit "rolls over")
+- Slider changes: all stat numbers GSAP CountTo new values over 0.6s
+- If % drops below 10%: red glow pulse on FREE HOURS card (GSAP repeat)
+- Light/dark toggle: GSAP 0.4s color fade across all tokens
+- Stat cards: hover → translateY -4px + deeper box-shadow (GSAP quickTo)
+- Country/gender change: life expectancy field fades out old value, fades in new one (GSAP 0.3s)
+
+---
+
+## DESIGN LANGUAGE
+
+- Fonts: Load "Space Grotesk" (headings, numbers, countdown) + "Inter" (body, labels, tooltips) from Google Fonts
+- Typography: Hero countdown 64px monospace bold · Free hours 48px bold · Section heads 22px semibold · Stat card numbers 36px bold · Labels 12px uppercase tracking-widest
+- Grid squares: 7×7px, 1.5px gap, zero border radius — sharp and dense
+- Cards: dark bg in dark mode, white in light mode, 8px radius, no border
+- Sliders: custom-styled — track fill in each category's color, thumb is a clean white circle with shadow
+- Overall aesthetic: data journalism editorial — urgent, clean, no decorative fluff. Every element earns its place.
+- No gradients on text. No glassmorphism. Sharp contrast only.
+
+---
+
+## RESPONSIVE BEHAVIOR
+
+- Desktop ≥1024px: right sidebar controls, center grid, stats below
+- Tablet 640–1023px: controls collapse into accordion below grid
+- Mobile <640px: full single column, grid squares scale to 5×5px with 1px gap, controls in collapsible sections with large touch targets
+
+---
+
+## STOP CONDITIONS
+
+- Pause and flag for human review if:
+  - ipapi.co fails or returns no country → silently default to "World Average", no error shown to user
+  - GSAP fails to load → skip animations gracefully, do not throw
+  - Free hours calculate negative → show red warning banner, do not crash
+  - Two valid approaches exist for an architectural decision → stop and ask
+
+After each major section completed, output: ✅ [section name]
+
+At the end, output a full list of every file created and a one-line description of each.

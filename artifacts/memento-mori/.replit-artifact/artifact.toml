@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Memento Mori: Time Audit"
+version = "1.0.0"
+id = "artifacts/memento-mori"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24978
+
+[services.development]
+run = "pnpm --filter @workspace/memento-mori run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/memento-mori", "run", "build" ]
+publicDir = "artifacts/memento-mori/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24978"
+BASE_PATH = "/"
