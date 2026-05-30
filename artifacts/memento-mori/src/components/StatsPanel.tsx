@@ -71,8 +71,6 @@ export function StatsPanel({ stats }: Props) {
     });
   };
 
-  const freeDays = Math.floor(stats.freeHoursRemaining / 24);
-
   return (
     <div>
       {stats.freeHours < 0 && (
@@ -83,11 +81,11 @@ export function StatsPanel({ stats }: Props) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-12">
         <StatCard
-          title="FREE DAYS REMAINING"
-          value={freeDays}
+          title="FREE MONTHS REMAINING"
+          value={stats.freeMonths}
           color="var(--accent)"
           large={true}
-          perspectiveLine="Days with no obligations — after everything is subtracted"
+          perspectiveLine="Months with no obligations — after everything is subtracted"
         />
 
         <div className="col-span-1 sm:col-span-2 mb-4">

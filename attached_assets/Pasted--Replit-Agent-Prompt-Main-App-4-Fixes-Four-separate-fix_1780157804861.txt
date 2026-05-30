@@ -1,0 +1,60 @@
+# Replit Agent Prompt — Main App: 4 Fixes
+
+Four separate fixes to the main app page. Do them all in one pass. Do not change any calculation logic in `useLifeCalc.ts` except where explicitly instructed below.
+
+---
+
+## TASK 1 — Scroll chevron visibility
+
+The animated scroll chevron (ChevronDown icon) at the bottom of the hero section is being clipped/cut off on laptop screens (~900px viewport height). The root cause is likely the hero section overflowing or the chevron being positioned outside the `--dvh` boundary.
+
+Fix: ensure the hero section is exactly `100dvh` (using the `--dvh` CSS custom property already set on mount), that `overflow: hidden` is NOT applied to it, and that the chevron is the last item in the hero flex column with no negative margin or absolute positioning pushing it out of frame. The chevron should always be fully visible without scrolling on any screen ≥ 768px tall.
+
+---
+
+## TASK 2 — Replace "Free Saturdays Remaining" card with "% of Life Behind You"
+
+In the hero section, replace the **Free Saturdays Remaining** stat card with a new card:
+
+- Label: `LIFE ALREADY LIVED`
+- Value: `X.X%` — calculated as `(currentAge / lifeExpectancy) × 100`, formatted to 1 decimal place
+- Sublabel: `OF YOUR EXPECTED LIFESPAN IS BEHIND YOU`
+- Use the same card styling as the existing Free Years Remaining card beside it
+- Add this value to `useLifeCalc.ts` as `pctLifeBehind` — do not inline the calculation in the component
+- Remove all references to `freeSaturdays` from the hero section only (keep it in `StatsPanel.tsx` stat cards if it exists there)
+
+---
+
+## TASK 3 — Life grid: fix centering + decade labels
+
+The canvas grid is not horizontally centered and the decade age labels (10, 20, 30...) are misaligned.
+
+Restructure the grid layout to use **one row per year** (52 squares per row), grouped into decades (10 rows per decade group). This simplifies the column math completely:
+
+- `cols = 52` (fixed, not computed from container width)
+- `rows = Math.ceil(lifeExpectancy)` total rows, one per year of life
+- Each decade group = 10 rows with a small gap between groups
+- Age labels (10, 20, 30, 40, 50, 60, 70, 80) rendered as HTML `<span>` elements to the LEFT of their decade group, vertically centered in the 10-row block — NOT as canvas text
+- The canvas itself should be centered in its container via `display: block; margin: 0 auto`
+- `ResizeObserver` should set the canvas `width` to the container's `clientWidth`, and canvas height should be computed from the fixed row/gap math — not the other way around
+- Apply `devicePixelRatio` scaling as before
+- Past weeks: same base color + red X via `ctx.stroke()`. Current week: accent border + pulse. Future: base color only.
+
+---
+
+## TASK 4 — Replace "Free Days Remaining" with "Free Months Remaining"
+
+In `useLifeCalc.ts`, add a new exported value:
+
+```
+freeMonths = Math.floor(freeHours / 730)
+```
+
+*(derived from: freeHours / (8760 / 12))*
+
+In `StatsPanel.tsx` (or wherever the "Free Days Remaining" card renders), replace it:
+
+- Label: `FREE MONTHS REMAINING`
+- Value: `freeMonths.toLocaleString()`
+- Sublabel: `MONTHS WITH NO OBLIGATIONS — AFTER EVERYTHING IS SUBTRACTED`
+- Remove the `freeDays` card entirely from the UI (you can keep the `freeDays` calculation in `useLifeCalc.ts` if other things depend on it, just don't render the card)

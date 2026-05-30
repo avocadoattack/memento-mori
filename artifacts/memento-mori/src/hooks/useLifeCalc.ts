@@ -231,7 +231,9 @@ export function useLifeCalc() {
     const freeHoursRemaining = freeHours * (1 - Math.min(1, currentAge / lifeExpectancy));
     const freeYears          = freeHours / 8760;
     const freeWeeks          = freeHours / 168;
+    const freeMonths         = Math.floor(freeHours / 730);
     const pctLifeYours       = (freeHours / totalLifeHours) * 100;
+    const pctLifeBehind      = Math.min(100, (currentAge / lifeExpectancy) * 100);
 
     const socialMediaYearsLost = socialMediaHours_total / 8760;
     const tvYearsLost          = tvHours_total          / 8760;
@@ -241,8 +243,8 @@ export function useLifeCalc() {
       totalLifeHours, sleepHours_total, workHours_total, schoolHours_total, schoolCalendarYears,
       eatingHours_total, groomingHours_total, choresHours_total, commuteHours_total,
       socialMediaHours_total, tvHours_total, streamingHours_total,
-      totalTaken, freeHours, freeHoursRemaining, freeYears, freeWeeks, pctLifeYours,
-      socialMediaYearsLost, tvYearsLost, streamingYearsLost,
+      totalTaken, freeHours, freeHoursRemaining, freeYears, freeWeeks, freeMonths, pctLifeYours,
+      pctLifeBehind, socialMediaYearsLost, tvYearsLost, streamingYearsLost,
     };
   }, [
     lifeExpectancy, currentAge, sleepHoursPerNight, workHoursPerWeek,

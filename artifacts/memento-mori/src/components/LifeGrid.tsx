@@ -7,7 +7,6 @@ interface Props {
 }
 
 interface EmojiPositions {
-  babyY: number;
   coffinX: number;
   coffinY: number;
 }
@@ -17,42 +16,47 @@ interface DecadeLabel {
   y: number;
 }
 
+const COLS = 52;          // fixed: one column per week of the year
+const SQ_GAP = 2;         // px gap between squares
+const DECADE_GAP = 8;     // extra px gap between 10-year row groups
+const LABEL_WIDTH = 40;   // px for the decade-label column to the left of canvas
+
 export function LifeGrid({ state, lifeExpectancy }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [tooltipData, setTooltipData] = useState<{ x: number; y: number; weekIndex: number; totalSquares: number; isPast: boolean; isCurrent: boolean } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [tooltipData, setTooltipData] = useState<{
+    x: number; y: number; weekIndex: number; totalSquares: number;
+    isPast: boolean; isCurrent: boolean;
+  } | null>(null);
   const [emojiPositions, setEmojiPositions] = useState<EmojiPositions | null>(null);
   const [decadeLabels, setDecadeLabels] = useState<DecadeLabel[]>([]);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [availableWidth, setAvailableWidth] = useState(800);
+  const [containerWidth, setContainerWidth] = useState(800);
 
-  const LABEL_COL_WIDTH = 40; // px reserved to the left of the canvas for HTML labels
-
-  // Observe the actual container width so the canvas never overflows its section
   useEffect(() => {
     if (!containerRef.current) return;
     const ro = new ResizeObserver(entries => {
-      setAvailableWidth(entries[0].contentRect.width);
+      setContainerWidth(entries[0].contentRect.width);
     });
     ro.observe(containerRef.current);
     return () => ro.disconnect();
   }, []);
 
-  const totalWeeks = Math.ceil(lifeExpectancy * 52);
-  const currentWeek = Math.floor(state.currentAge * 52);
+  const totalWeeks = Math.ceil(lifeExpectancy * COLS);
+  const currentWeek = Math.floor(state.currentAge * COLS);
 
   const squares = useMemo(() => {
     const totalLifeHours = lifeExpectancy * 365.25 * 24;
     const workYears = Math.max(0, state.retirementAge - state.workStartAge);
 
-    const sleepHours       = state.sleepHoursPerNight  * 365.25 * lifeExpectancy;
-    const workHours        = state.workHoursPerWeek    * 52     * workYears;
+    const sleepHours       = state.sleepHoursPerNight    * 365.25 * lifeExpectancy;
+    const workHours        = state.workHoursPerWeek      * 52     * workYears;
     const schoolHours      = EDUCATION_LEVELS
       .filter(l => (state.selectedEducationLevels as string[]).includes(l.id))
       .reduce((sum, l) => sum + l.years * l.daysPerYear * l.hoursPerDay, 0);
-    const eatingHours      = state.eatingHoursPerDay    * 365.25 * lifeExpectancy;
-    const groomingHours    = state.groomingHoursPerDay  * 365.25 * lifeExpectancy;
-    const choresHours      = state.choresHoursPerDay    * 365.25 * lifeExpectancy;
-    const commuteHours     = state.commuteHoursPerDay   * 260    * workYears;
+    const eatingHours      = state.eatingHoursPerDay     * 365.25 * lifeExpectancy;
+    const groomingHours    = state.groomingHoursPerDay   * 365.25 * lifeExpectancy;
+    const choresHours      = state.choresHoursPerDay     * 365.25 * lifeExpectancy;
+    const commuteHours     = state.commuteHoursPerDay    * 260    * workYears;
     const socialMediaHours = state.socialMediaHoursPerDay * 365.25 * lifeExpectancy;
     const tvHours          = state.tvHoursPerDay          * 365.25 * lifeExpectancy;
     const streamingHours   = state.streamingHoursPerDay   * 365.25 * lifeExpectancy;
@@ -61,7 +65,6 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       choresHours + commuteHours + socialMediaHours + tvHours + streamingHours;
     const freeHours = totalLifeHours - usedHours;
 
-    const totalSquares = totalWeeks;
     const cats = [
       { name: 'Sleep',        color: '#147df5', hours: sleepHours },
       { name: 'Work',         color: '#ff0000', hours: workHours },
@@ -75,8 +78,8 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       { name: 'School',       color: '#ffd300', hours: schoolHours },
     ];
 
-    const counts = cats.map(cat => Math.round((cat.hours / totalLifeHours) * totalSquares));
-    let overflow = counts.reduce((a, b) => a + b, 0) - totalSquares;
+    const counts = cats.map(cat => Math.round((cat.hours / totalLifeHours) * totalWeeks));
+    let overflow = counts.reduce((a, b) => a + b, 0) - totalWeeks;
     if (overflow > 0) {
       const byLargest = counts.map((_, idx) => idx).sort((a, b) => counts[b] - counts[a]);
       for (const idx of byLargest) {
@@ -86,17 +89,15 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
         overflow -= trim;
       }
     }
-    const freeCount = Math.max(0, totalSquares - counts.reduce((a, b) => a + b, 0));
+    const freeCount = Math.max(0, totalWeeks - counts.reduce((a, b) => a + b, 0));
 
-    const arr: { i: number; color: string; category: string; hours: number; age: number; isPast: boolean; isCurrent: boolean }[] = [];
-    const push = (color: string, category: string, hours: number) => {
+    const arr: { i: number; color: string; category: string; isPast: boolean; isCurrent: boolean }[] = [];
+    const push = (color: string, category: string) => {
       const i = arr.length;
-      arr.push({ i, color, category, hours, age: i / 52, isPast: i < currentWeek, isCurrent: i === currentWeek });
+      arr.push({ i, color, category, isPast: i < currentWeek, isCurrent: i === currentWeek });
     };
-    cats.forEach((cat, ci) => {
-      for (let k = 0; k < counts[ci]; k++) push(cat.color, cat.name, cat.hours);
-    });
-    for (let k = 0; k < freeCount; k++) push('#0aefff', 'Free Time', freeHours);
+    cats.forEach((cat, ci) => { for (let k = 0; k < counts[ci]; k++) push(cat.color, cat.name); });
+    for (let k = 0; k < freeCount; k++) push('#0aefff', 'Free Time');
 
     return arr;
   }, [totalWeeks, currentWeek, lifeExpectancy, state]);
@@ -111,31 +112,22 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
     const isDark      = document.documentElement.classList.contains('dark');
     const futureColor = isDark ? '#2A2A2A' : '#D4CCBD';
 
-    const DECADE_GAP = 4;
-
-    let cols        = 1;
-    let sqSize      = 9;
-    let totalSqWidth = 11;
-    let canvasWidth  = 800;
-    let height       = 0;
-    let rowsCount    = 0;
+    let sqSize     = 1;
+    let totalSqWidth = 1;
+    let canvasWidth  = 0;
+    let canvasHeight = 0;
+    let rowsCount  = 0;
     let rafId: number | null = null;
 
-    // y for a given row, accounting for accumulated decade gaps every 520 weeks
-    const getRowY = (row: number): number => {
-      const decadesPassed = Math.floor((row * cols) / 520);
-      return Math.floor(row * totalSqWidth) + decadesPassed * DECADE_GAP;
-    };
+    // y for a given row index (one row = one year of life)
+    // every 10 rows there's an extra DECADE_GAP
+    const getRowY = (row: number): number =>
+      row * totalSqWidth + Math.floor(row / 10) * DECADE_GAP;
 
-    // Canvas-relative coordinates (x starts at 0 — no label column offset in canvas space)
-    const posOf = (idx: number) => {
-      const col = idx % cols;
-      const row = Math.floor(idx / cols);
-      return {
-        x: Math.floor(col * totalSqWidth),
-        y: getRowY(row),
-      };
-    };
+    const posOf = (idx: number) => ({
+      x: (idx % COLS) * totalSqWidth,
+      y: getRowY(Math.floor(idx / COLS)),
+    });
 
     const drawStaticSquare = (idx: number) => {
       const sq = squares[idx];
@@ -159,7 +151,7 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
     };
 
     const drawAllStatic = () => {
-      ctx.clearRect(0, 0, canvasWidth, height);
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       for (let i = 0; i < totalWeeks; i++) drawStaticSquare(i);
     };
 
@@ -171,13 +163,13 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
 
         ctx.clearRect(x - pad, y - pad, sqSize + pad * 2, sqSize + pad * 2);
 
-        const cCol = currentWeek % cols;
-        const cRow = Math.floor(currentWeek / cols);
+        const cCol = currentWeek % COLS;
+        const cRow = Math.floor(currentWeek / COLS);
         for (let r = cRow - range; r <= cRow + range; r++) {
-          if (r < 0) continue;
+          if (r < 0 || r >= rowsCount) continue;
           for (let c = cCol - range; c <= cCol + range; c++) {
-            if (c < 0 || c >= cols) continue;
-            const idx = r * cols + c;
+            if (c < 0 || c >= COLS) continue;
+            const idx = r * COLS + c;
             if (idx < 0 || idx >= totalWeeks || idx === currentWeek) continue;
             drawStaticSquare(idx);
           }
@@ -200,53 +192,41 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
     };
 
     const setup = () => {
-      const fullWidth = availableWidth;
-      const isMobile  = availableWidth < 640;
-      sqSize      = isMobile ? 5 : 9;
-      const gap   = 2;
-      totalSqWidth = sqSize + gap;
-
-      // Canvas uses full width minus the HTML label column
-      canvasWidth = fullWidth - LABEL_COL_WIDTH;
-      const maxCols = Math.max(1, Math.floor(canvasWidth / totalSqWidth));
-      const candidates = [130, 104, 65, 52, 40, 26, 20, 13, 10, 8, 5, 4, 2, 1];
-      cols = candidates.find(c => c <= maxCols) ?? 52;
-      rowsCount   = Math.ceil(totalWeeks / cols);
-      height      = getRowY(rowsCount - 1) + totalSqWidth + DECADE_GAP;
+      const isMobile = containerWidth < 640;
+      sqSize       = isMobile ? 5 : 9;
+      totalSqWidth = sqSize + SQ_GAP;
+      rowsCount    = Math.ceil(lifeExpectancy);
+      canvasWidth  = COLS * totalSqWidth;
+      canvasHeight = getRowY(rowsCount) + totalSqWidth;
 
       const dpr = window.devicePixelRatio || 1;
-      canvas.width        = Math.round(canvasWidth * dpr);
-      canvas.height       = Math.round(height     * dpr);
-      canvas.style.width  = canvasWidth + 'px';
-      canvas.style.height = height      + 'px';
+      canvas.width        = Math.round(canvasWidth  * dpr);
+      canvas.height       = Math.round(canvasHeight * dpr);
+      canvas.style.width  = canvasWidth  + 'px';
+      canvas.style.height = canvasHeight + 'px';
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.imageSmoothingEnabled = false;
 
       drawAllStatic();
 
-      // Fix 7: decade labels centered vertically within each decade group
+      // Decade labels: age 10, 20, 30 … each centered vertically in its 10-row block
       const labels: DecadeLabel[] = [];
-      const rowsPerDecade = 520 / cols;
       for (let d = 10; d <= 80; d += 10) {
-        const weekIdx = d * 52;
-        if (weekIdx >= totalWeeks) break;
-        const firstRow = (d * 52) / cols;
-        const midRow = firstRow + rowsPerDecade / 2;
-        const floorMidRow = Math.floor(midRow);
-        const frac = midRow - floorMidRow;
-        const pixelY = Math.round(getRowY(floorMidRow) + frac * totalSqWidth);
-        labels.push({ decade: d, y: pixelY });
+        if (d >= rowsCount) break;
+        // center of rows d … d+9
+        const topY = getRowY(d);
+        const botY = getRowY(Math.min(d + 10, rowsCount));
+        const centerY = Math.round((topY + botY) / 2) - Math.round(sqSize / 2);
+        labels.push({ decade: d, y: centerY });
       }
       setDecadeLabels(labels);
 
-      // Fix 2 & 3: emoji positions (coffinX is canvas-relative, shifted by LABEL_COL_WIDTH for wrapper)
+      // Coffin emoji: to the right of the last square
       if (totalWeeks > 0) {
-        const babyPos  = posOf(0);
-        const lastPos  = posOf(totalWeeks - 1);
+        const lastPos = posOf(totalWeeks - 1);
         setEmojiPositions({
-          babyY:    babyPos.y,
-          coffinX:  lastPos.x + sqSize + 4,  // canvas-relative
-          coffinY:  lastPos.y,
+          coffinX: lastPos.x + sqSize + 4,
+          coffinY: lastPos.y,
         });
       }
     };
@@ -263,8 +243,9 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       const mouseY = e.clientY - rect.top;
 
       const col = Math.floor(mouseX / totalSqWidth);
-      if (col < 0 || col >= cols) { setTooltipData(null); return; }
+      if (col < 0 || col >= COLS) { setTooltipData(null); return; }
 
+      // Find hovered row by scanning getRowY values
       let hoveredRow = -1;
       for (let r = 0; r < rowsCount; r++) {
         const rowY = getRowY(r);
@@ -272,15 +253,12 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       }
       if (hoveredRow === -1) { setTooltipData(null); return; }
 
-      const index = hoveredRow * cols + col;
+      const index = hoveredRow * COLS + col;
       if (index >= 0 && index < totalWeeks) {
         setTooltipData({
-          x:            e.clientX,
-          y:            e.clientY,
-          weekIndex:    index,
-          totalSquares: totalWeeks,
-          isPast:       index < currentWeek,
-          isCurrent:    index === currentWeek,
+          x: e.clientX, y: e.clientY,
+          weekIndex: index, totalSquares: totalWeeks,
+          isPast: index < currentWeek, isCurrent: index === currentWeek,
         });
       } else {
         setTooltipData(null);
@@ -297,11 +275,11 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [squares, totalWeeks, currentWeek, availableWidth]);
+  }, [squares, totalWeeks, currentWeek, containerWidth, lifeExpectancy]);
 
   const labelStyle: React.CSSProperties = {
     position: 'absolute',
-    left: 8,
+    right: 8,
     fontSize: '11px',
     fontWeight: 700,
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -310,7 +288,6 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
     pointerEvents: 'none',
     color: 'var(--foreground)',
     opacity: 0.4,
-    width: '28px',
     textAlign: 'right',
   };
 
@@ -320,28 +297,36 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
         Each square = 1 week of your life
       </div>
 
-      {/* Wrapper: left 40px column for HTML decade labels, canvas to the right */}
-      <div style={{ position: 'relative', paddingLeft: LABEL_COL_WIDTH, display: 'block', marginLeft: 'auto', marginRight: 'auto', width: 'fit-content' }}>
+      {/* Outer centering wrapper */}
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        {/* Inner wrapper: label column + canvas side-by-side */}
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-start' }}>
 
-        {/* Fix 1: decade labels as HTML — crisp on all DPR screens */}
-        {decadeLabels.map(({ decade, y }) => (
-          <span key={decade} style={{ ...labelStyle, top: y, transform: 'translateY(-50%)' }}>{decade}</span>
-        ))}
+          {/* Decade label column — HTML spans, crisp on all DPR */}
+          <div style={{ width: LABEL_WIDTH, position: 'relative', flexShrink: 0, alignSelf: 'stretch' }}>
+            {decadeLabels.map(({ decade, y }) => (
+              <span key={decade} style={{ ...labelStyle, top: y }}>{decade}</span>
+            ))}
+          </div>
 
-        <canvas ref={canvasRef} className="block cursor-crosshair" />
+          {/* Canvas — display:block; no explicit margin needed since flex handles centering */}
+          <div style={{ position: 'relative' }}>
+            <canvas ref={canvasRef} className="block cursor-crosshair" />
 
-        {/* Fix 3: coffin emoji replaces skull, positioned right of last square */}
-        {emojiPositions && (
-          <span style={{
-            position: 'absolute',
-            left: LABEL_COL_WIDTH + emojiPositions.coffinX,
-            top: emojiPositions.coffinY,
-            fontSize: '16px',
-            lineHeight: 1,
-            pointerEvents: 'none',
-            userSelect: 'none',
-          }}>⚰️</span>
-        )}
+            {/* Coffin emoji after last square */}
+            {emojiPositions && (
+              <span style={{
+                position: 'absolute',
+                left: emojiPositions.coffinX,
+                top: emojiPositions.coffinY,
+                fontSize: '16px',
+                lineHeight: 1,
+                pointerEvents: 'none',
+                userSelect: 'none',
+              }}>⚰️</span>
+            )}
+          </div>
+        </div>
       </div>
 
       {tooltipData && (
@@ -371,7 +356,6 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
           </div>
         </div>
       )}
-
     </div>
   );
 }

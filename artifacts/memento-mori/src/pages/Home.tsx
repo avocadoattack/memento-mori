@@ -96,9 +96,9 @@ export default function Home() {
           boxSizing: 'border-box',
         }}
       >
-        {/* Main content block — grows to fill space, content vertically centered */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-          <div className="text-center" style={{ marginBottom: '56px' }}>
+        {/* Main content block — grows to fill space, content vertically centered; min-height:0 prevents overflow pushing chevron off-screen */}
+        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+          <div className="text-center" style={{ marginBottom: 'clamp(20px, 3vh, 48px)' }}>
             <h1 className="font-bold font-mono tracking-tighter" style={{ fontSize: 'clamp(64px, 10vw, 120px)', marginBottom: '8px' }}>
               MEMENTO MORI
             </h1>
@@ -111,6 +111,7 @@ export default function Home() {
             currentAge={state.currentAge}
             lifeExpectancy={lifeExpectancy}
             freeHoursRemaining={stats.freeHoursRemaining}
+            pctLifeBehind={stats.pctLifeBehind}
           />
         </div>
 

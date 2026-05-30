@@ -5,22 +5,22 @@ interface Props {
   currentAge: number;
   lifeExpectancy: number;
   freeHoursRemaining: number;
+  pctLifeBehind: number;
 }
 
-export function Countdown({ currentAge, lifeExpectancy, freeHoursRemaining }: Props) {
+export function Countdown({ currentAge, lifeExpectancy, freeHoursRemaining, pctLifeBehind = 0 }: Props) {
   const [timeLeft, setTimeLeft] = useState({
     years: 0, months: 0, weeks: 0, days: 0, hours: 0, minutes: 0, seconds: 0
   });
 
   const yearsRef = useRef<HTMLDivElement>(null);
-  const saturdaysRef = useRef<HTMLDivElement>(null);
+  const pctRef = useRef<HTMLDivElement>(null);
   const prevYears = useRef(freeHoursRemaining / 8760);
-  const prevSaturdays = useRef(Math.floor(freeHoursRemaining / 8));
+  const prevPct = useRef(pctLifeBehind);
 
   useEffect(() => {
     const cancels: Array<() => void> = [];
     const y = freeHoursRemaining / 8760;
-    const s = Math.floor(freeHoursRemaining / 8);
 
     if (yearsRef.current && parseFloat(prevYears.current.toFixed(1)) !== parseFloat(y.toFixed(1))) {
       cancels.push(countTo(prevYears.current, y, 0.6, (val) => {
@@ -29,17 +29,17 @@ export function Countdown({ currentAge, lifeExpectancy, freeHoursRemaining }: Pr
       prevYears.current = y;
     }
 
-    if (saturdaysRef.current && prevSaturdays.current !== s) {
-      cancels.push(countTo(prevSaturdays.current, s, 0.6, (val) => {
-        if (saturdaysRef.current) {
-          saturdaysRef.current.innerHTML = Math.round(val).toLocaleString();
+    if (pctRef.current && parseFloat(prevPct.current.toFixed(1)) !== parseFloat(pctLifeBehind.toFixed(1))) {
+      cancels.push(countTo(prevPct.current, pctLifeBehind, 0.6, (val) => {
+        if (pctRef.current) {
+          pctRef.current.innerHTML = val.toFixed(1) + '%';
         }
       }));
-      prevSaturdays.current = s;
+      prevPct.current = pctLifeBehind;
     }
 
     return () => cancels.forEach(c => c());
-  }, [freeHoursRemaining]);
+  }, [freeHoursRemaining, pctLifeBehind]);
 
   useEffect(() => {
     const ageInMs = currentAge * 365.25 * 24 * 3600 * 1000;
@@ -100,7 +100,7 @@ export function Countdown({ currentAge, lifeExpectancy, freeHoursRemaining }: Pr
   ];
 
   return (
-    <div className="flex flex-col items-center gap-12 my-12 w-full max-w-4xl mx-auto">
+    <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto">
       <div className="text-center">
         <h3 className="text-xs font-bold uppercase tracking-widest opacity-60 mb-6">Countdown to Expected Death</h3>
         <div
@@ -171,11 +171,11 @@ export function Countdown({ currentAge, lifeExpectancy, freeHoursRemaining }: Pr
         </div>
 
         <div className="flex flex-col bg-card rounded-none border border-border shadow-sm text-center" style={{ padding: '32px', minHeight: '160px' }}>
-          <div className="text-xs font-bold uppercase tracking-widest opacity-60 mb-2">Free Saturdays Remaining</div>
-          <div ref={saturdaysRef} className="font-bold font-mono text-foreground leading-none mb-3" style={{ fontSize: 'clamp(36px, 5vw, 56px)' }}>
-            {Math.floor(Math.max(0, freeHoursRemaining) / 8).toLocaleString()}
+          <div className="text-xs font-bold uppercase tracking-widest opacity-60 mb-2">Life Already Lived</div>
+          <div ref={pctRef} className="font-bold font-mono text-foreground leading-none mb-3" style={{ fontSize: 'clamp(36px, 5vw, 56px)' }}>
+            {pctLifeBehind.toFixed(1)}%
           </div>
-          <div className="text-xs uppercase tracking-widest opacity-40 font-bold mt-auto pt-2 border-t border-border">A full free day = 8 waking hours</div>
+          <div className="text-xs uppercase tracking-widest opacity-40 font-bold mt-auto pt-2 border-t border-border">Of your expected lifespan is behind you</div>
         </div>
       </div>
     </div>
