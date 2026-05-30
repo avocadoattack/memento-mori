@@ -14,7 +14,7 @@ export function useTheme() {
       const fallback = () => {
         if (determined) return;
         determined = true;
-        const prefersDark = window.matchMatchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
         document.documentElement.classList.toggle('dark', prefersDark);
       };
 
@@ -46,6 +46,7 @@ export function useTheme() {
     } else {
       isDark = theme === 'dark';
       document.documentElement.classList.toggle('dark', isDark);
+      return;
     }
   }, [theme]);
 

@@ -1,0 +1,187 @@
+This is an improvement pass on an existing React + Vite app called Memento Mori: Time Audit. Do NOT rebuild from scratch. Apply only the changes listed below. Preserve all existing calculation logic, the life expectancy lookup table, the IP geolocation, and the countdown timer.
+
+---
+
+## CHANGE 1 — REMOVE GSAP ENTIRELY
+
+Uninstall GSAP. Replace every animation with one of these:
+- CSS transitions (color, opacity, transform) — use `transition: all 0.25s ease` where smooth changes are needed
+- `requestAnimationFrame` loop for the countdown ticker (already ticks per second — no animation library needed)
+- CSS `@keyframes` for the current-week pulse on the grid
+- A lightweight custom `countTo(start, end, duration, onUpdate)` function using `requestAnimationFrame` for the stat card number animations — implement this as a ~15-line vanilla JS utility, no library
+
+This is the primary performance fix. The grid re-rendering 4,000+ nodes through GSAP is the bottleneck.
+
+---
+
+## CHANGE 2 — GRID PERFORMANCE: VIRTUALIZE OR USE CANVAS
+
+The life grid is the main bottleneck. Replace the DOM-based grid with an HTML5 `<canvas>` element. Draw all squares using the 2D canvas API:
+- Each square: 7×7px, 1.5px gap
+- Color logic unchanged — use the same category color priority per week
+- Past weeks: draw at 30% opacity
+- Current week: CSS `@keyframes` pulse is NOT possible on canvas — instead, use `requestAnimationFrame` to redraw just the current week square with a subtle scale/glow effect each frame
+- Hover tooltip: track `mousemove` on the canvas element, calculate which square the cursor is over using mouse coordinates, show a CSS-positioned tooltip div
+- On any input change: call `redrawCanvas()` — this should complete in under 16ms (single frame)
+
+This eliminates 4,000+ DOM nodes and makes country/slider changes feel instant.
+
+---
+
+## CHANGE 3 — LAYOUT REDESIGN
+
+**Current week grid is too small. Make it the hero of the page.**
+
+New layout structure:
+
+[HERO SECTION — full width]
+
+Title + subhead
+Countdown to death
+Free Weekends Remaining (see Change 5)
+
+[LIFE GRID — full width, ~80vw × auto height canvas, centered]
+
+Spans the full content width
+Label above: "Each square = 1 week of your life"
+Color legend row below the grid (horizontal, one dot + label per category)
+
+[TWO-COLUMN SECTION below grid]
+Left column (~60% width): STATS WITH PERSPECTIVE (see Change 6)
+Right column (~40% width): PARAMETERS PANEL (see Change 4)
+
+Remove the fixed right-sidebar layout entirely. The parameters panel moves to the lower right, below the grid.
+
+---
+
+## CHANGE 4 — PARAMETERS PANEL REDESIGN
+
+**Goal: make it clear these are research-backed defaults, not arbitrary numbers.**
+
+At the top of the parameters panel, add a card/callout box:
+
+> "All defaults are drawn from real research data — BLS American Time Use Survey, Gallup 2024, DemandSage 2026, UN WPP 2024. Adjust any value to model your own life. Changed values are highlighted."
+
+Behavior changes:
+- Any slider that has been changed from its default: highlight its track in the accent color and show a small "●" dot next to the label
+- Add a **"Reset to Defaults"** button at the bottom of the panel — resets ALL sliders to their calculated defaults (including age-dynamic ones) and removes highlights. Style it as a ghost button with accent color border.
+- Sliders that have age-dynamic defaults: show a small badge next to the label reading "auto" — e.g., "Social Media & Doomscrolling [auto]". The badge disappears if the user manually overrides it.
+- Group the sliders with clear visual dividers and section headers (already done, keep them)
+
+---
+
+## CHANGE 5 — HERO FREE HOURS → FREE WEEKENDS
+
+Replace the "Free Hours Remaining" counter in the hero section with two metrics side by side:
+
+**FREE WEEKENDS REMAINING**
+Formula: `Math.floor(freeHoursRemaining / 48)`
+Label below: "A weekend = 48 hours to yourself"
+
+**FREE SATURDAYS REMAINING**
+Formula: `Math.floor(freeHoursRemaining / 8)` (a full free day = ~8 productive waking hours)
+Label below: "A full free day = 8 waking hours"
+
+Style both as large bold numbers side by side, same visual weight. These are far more visceral than abstract hour counts.
+
+---
+
+## CHANGE 6 — STATS WITH PERSPECTIVE (replace current stat cards)
+
+Keep the raw number visible (small, secondary) but add a large bold "perspective line" to each card that translates the hours into something relatable. Use these formulas:
+
+**Sleeping**
+Perspective: `[hours] hours sleeping = [years, 1 decimal] years unconscious`
+
+**Working**
+Perspective: `[hours] hours = [n] full-time work-years (at 2,080h/yr)`
+Secondary: `That's [n] entire careers' worth of time`
+
+**In School**
+Perspective: `[hours] hours = [n] PhD programs worth of study time (PhD ≈ 3,500 hrs)`
+
+**Eating & Cooking**
+Perspective: `[hours] hours eating = [years, 1 decimal] years at the table`
+
+**Grooming**
+Perspective: `[hours] hours grooming = [n] days in front of the mirror`
+
+**Chores**
+Perspective: `[hours] hours on chores = [n] years of domestic labor`
+
+**Commuting**
+Perspective: `[hours] hours commuting = [n] round trips from New York to Los Angeles by car (approx 40 hrs each)`
+Formula: `Math.round(hours / 40)`
+
+**Social Media & Doomscrolling**
+Perspective line 1: `[hours] hours = [n] books you could have read`
+Formula: `Math.round(hours / 6)` — avg book takes ~6h to read
+Perspective line 2: `Or [n] languages learned to conversational level`
+Formula: `Math.round(hours / 700)` — ~700h to reach B2 in a language
+
+**Passive TV**
+Perspective line 1: `[hours] hours = [n] gym sessions you could have done`
+Formula: `Math.round(hours / 1)` — 1h per session
+Perspective line 2: `Or [n] complete rewatches of Breaking Bad`
+Formula: `Math.round(hours / 49)` — Breaking Bad = ~49h total
+
+**FREE HOURS** (the big card — keep it largest)
+Perspective: `That's [n] free weekends — [x] years of Saturdays`
+Formula weekends: `Math.round(freeHours / 48)`
+Formula years of Saturdays: `(freeHours / (52 * 8)).toFixed(1)`
+
+Also add below FREE HOURS: a horizontal bar that shows the breakdown of taken hours by category — a simple stacked bar, full width, each segment in its category color, with a small label on hover. No external chart library — draw it with CSS flex widths.
+
+---
+
+## CHANGE 7 — AGE-DYNAMIC DEFAULTS FOR MORE PARAMETERS
+
+Extend the age-dynamic default system (currently only Social Media) to these parameters. Recalculate defaults whenever the Age input changes:
+
+**Work Hours per Week** — based on current age:
+
+Age < 16: 0h (no work default)
+Age 16–17: 10h (part-time teen jobs, BLS data)
+Age 18–21: 20h (part-time while studying)
+Age 22–64: 40h (full-time default)
+Age 65+: 0h (post-retirement default)
+
+Also adjust Work Start Age and Retire Age defaults:
+- Age < 22: Work Start Age defaults to current age + 4
+- Age ≥ 65: Retire Age defaults to current age (already retired)
+
+**Passive TV Watching** — based on current age (BLS American Time Use Survey):
+
+Age 13–24: 1.5h/day
+Age 25–34: 2.5h/day
+Age 35–44: 3.0h/day
+Age 45–54: 3.5h/day
+Age 55–64: 4.5h/day
+Age 65+:   5.5h/day
+
+Add tooltip: "Source: BLS American Time Use Survey — TV watching increases significantly with age."
+
+Mark all age-dynamic sliders with the "auto" badge (see Change 4).
+
+---
+
+## CHANGE 8 — MINOR UX FIXES
+
+- Country dropdown: on change, skip any animation, just immediately redraw the canvas — no transition delay
+- Life expectancy field: when country or gender changes, update instantly (0 delay) — no fade animation
+- Add a small "?" info icon next to "Life Expectancy" that shows: "Set automatically from UN WPP 2024 data for your country and sex. Click Override to set manually."
+- Mobile: on screens < 640px, reduce canvas square size to 5×5px with 1px gap
+- All slider value labels: show 1 decimal place for values < 10, 0 decimals for values ≥ 10
+- Remove any loading spinners on the grid — the canvas redraw should be fast enough that no spinner is needed
+
+---
+
+## STOP CONDITIONS
+
+- Do NOT rebuild any calculation logic — only change what is listed above
+- Do NOT add any new npm packages except removing gsap
+- Do NOT change the life expectancy data table or the IP detection logic
+- Stop and ask if any change above conflicts with existing architecture in a way that requires a structural rebuild
+
+After each change is applied, output: ✅ Change [N] complete — [one line summary of what changed]
+At the end, output a summary of every file modified.

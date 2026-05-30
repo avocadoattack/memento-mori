@@ -1,44 +1,46 @@
-# [Project name]
+# Memento Mori: Time Audit
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A frontend-only life-audit calculator. Given your age, sex, country, and daily habits, it shows a countdown to your expected death, a "life in weeks" grid, and how much discretionary free time you actually have left after sleep, work, and everything else.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- The app runs via the `artifacts/memento-mori: web` workflow (Vite). Restart it to verify, don't run root `pnpm dev`.
+- `pnpm --filter @workspace/memento-mori run typecheck` — typecheck just this app
 - `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- No env vars or backend required — the app is pure frontend.
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- App: React + Vite (SPA), Tailwind CSS v4, shadcn/ui (Radix) tooltips, lucide-react icons
+- No backend, no database — all state is in-memory React state
+- Fonts: Space Grotesk (mono/display) + Inter (sans)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/memento-mori/` — the whole app
+  - `src/hooks/useLifeCalc.ts` — source of truth for all inputs, age-dynamic defaults, override state, and the derived `stats` totals
+  - `src/hooks/useTheme.ts` — theme resolution (geolocation → sunrise/sunset → `prefers-color-scheme`)
+  - `src/lib/lifeExpectancy.ts` — UN WPP 2024 life-expectancy table by country/sex (do not alter)
+  - `src/components/LifeGrid.tsx` — canvas "life in weeks" grid
+  - `src/index.css` — theme tokens (`--accent`, `--cat-*` are hex), fonts, slider styles
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
-
-## Product
-
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Pure frontend by design; no API or persistence. Refreshing resets everything.
+- `LifeGrid` is a single HTML5 canvas (not ~4,000 DOM nodes). It draws the full grid once, then per frame only clears/redraws a small region around the current-week cell to animate the pulse — keeps it cheap on weak devices. Re-runs on window resize.
+- Many inputs have age-dynamic research-backed defaults; editing a field marks it "overridden" so age changes stop auto-updating it. "Reset to Defaults" clears overrides.
+- `countTo` (number roll-up animation) returns a cancel handle; callers cancel the previous run in the effect cleanup to avoid races/flicker under rapid slider changes.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Aesthetic: data-journalism editorial — sharp contrast, no gradients, no glassmorphism, no emojis.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Verify with `pnpm --filter @workspace/memento-mori run typecheck`, not `build` (build needs workflow-provided `PORT`/`BASE_PATH`).
+- Canvas cannot use CSS `var()` for colors — read the computed hex via `getComputedStyle`. See `.agents/memory/canvas-css-vars.md`.
+- This repo also contains an `api-server` artifact from the monorepo template; it is unused by this app.
 
 ## Pointers
 

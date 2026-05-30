@@ -1,0 +1,1 @@
+- [Canvas CSS vars](canvas-css-vars.md) — canvas fillStyle/shadowColor can't parse `var(--x)`; read computed hex via getComputedStyle.

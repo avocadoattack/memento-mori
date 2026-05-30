@@ -1,42 +1,28 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { useLifeCalc } from '../hooks/useLifeCalc';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { Countdown } from '../components/Countdown';
 import { LifeGrid } from '../components/LifeGrid';
 import { ControlsPanel } from '../components/ControlsPanel';
 import { StatsPanel } from '../components/StatsPanel';
-import gsap from 'gsap';
 
 export default function Home() {
   const { state, lifeExpectancy, stats } = useLifeCalc();
-  const heroRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    try {
-      if (heroRef.current) {
-        gsap.fromTo(
-          heroRef.current.children,
-          { opacity: 0, y: 30 },
-          { opacity: 1, y: 0, duration: 2.5, ease: "power2.out", stagger: 0.2 }
-        );
-      }
-    } catch (e) {
-      // Graceful degradation
-    }
-  }, []);
 
   return (
-    <div className="min-h-screen pb-24 font-sans bg-background text-foreground selection:bg-accent selection:text-white">
+    <div className="min-h-[100dvh] pb-24 font-sans bg-background text-foreground selection:bg-accent selection:text-white transition-colors duration-250 ease-out">
       <ThemeToggle />
       
       {/* Hero Section */}
-      <div ref={heroRef} className="pt-16 pb-8 px-4 text-center max-w-4xl mx-auto">
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-mono tracking-tighter mb-4">
-          YOUR LIFE IN WEEKS
-        </h1>
-        <p className="text-lg md:text-xl opacity-70 mb-12 max-w-2xl mx-auto">
-          After sleep, work, and everything else — here's what's actually left.
-        </p>
+      <div className="pt-16 pb-12 px-4 w-full max-w-[1200px] mx-auto">
+        <div className="text-center mb-10">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-mono tracking-tighter mb-4">
+            YOUR LIFE IN WEEKS
+          </h1>
+          <p className="text-lg md:text-xl opacity-70 max-w-2xl mx-auto">
+            After sleep, work, and everything else — here's what's actually left.
+          </p>
+        </div>
 
         <Countdown 
           currentAge={state.currentAge} 
@@ -45,21 +31,19 @@ export default function Home() {
         />
       </div>
 
-      <div className="max-w-[1400px] mx-auto px-4 flex flex-col lg:flex-row gap-12 mt-8">
-        {/* Grid Panel */}
-        <div className="flex-1 order-2 lg:order-1 overflow-hidden min-w-0">
-          <LifeGrid state={state} lifeExpectancy={lifeExpectancy} />
-        </div>
-
-        {/* Controls Panel */}
-        <div className="w-full lg:w-[420px] order-1 lg:order-2 shrink-0">
-          <ControlsPanel state={state} lifeExpectancy={lifeExpectancy} />
-        </div>
+      {/* Grid Section */}
+      <div className="w-full max-w-[1400px] mx-auto px-4 mb-20">
+        <LifeGrid state={state} lifeExpectancy={lifeExpectancy} />
       </div>
 
-      {/* Stats Panel */}
-      <div className="max-w-[1400px] mx-auto px-4 mt-20">
-        <StatsPanel stats={stats} />
+      {/* Two Column Layout */}
+      <div className="max-w-[1400px] mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-12">
+        <div className="lg:col-span-7">
+          <StatsPanel stats={stats} />
+        </div>
+        <div className="lg:col-span-5">
+          <ControlsPanel state={state} lifeExpectancy={lifeExpectancy} />
+        </div>
       </div>
     </div>
   );

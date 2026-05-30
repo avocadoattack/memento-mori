@@ -7,9 +7,10 @@ interface CustomSliderProps {
   step?: number;
   onChange: (val: number) => void;
   color: string;
+  isOverridden?: boolean;
 }
 
-export function CustomSlider({ value, min, max, step = 1, onChange, color }: CustomSliderProps) {
+export function CustomSlider({ value, min, max, step = 1, onChange, color, isOverridden }: CustomSliderProps) {
   const percentage = ((value - min) / (max - min)) * 100;
   
   const bgStyle = {
@@ -24,7 +25,7 @@ export function CustomSlider({ value, min, max, step = 1, onChange, color }: Cus
       step={step}
       value={value}
       onChange={(e) => onChange(parseFloat(e.target.value))}
-      className="custom-slider"
+      className={`custom-slider ${isOverridden ? 'ring-1 ring-accent ring-offset-1 ring-offset-background' : ''}`}
       style={bgStyle}
     />
   );
