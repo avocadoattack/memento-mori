@@ -48,14 +48,25 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
         socialH = state.socialMediaHoursPerDay * 7;
       }
 
-      const tvH = state.tvHoursPerDay * 7;
+      // Age-adjusted TV hours (same lookup table as getDynamicDefaults)
+      let tvH: number;
+      if (age <= 24) tvH = 1.5 * 7;
+      else if (age <= 34) tvH = 2.5 * 7;
+      else if (age <= 44) tvH = 3.0 * 7;
+      else if (age <= 54) tvH = 3.5 * 7;
+      else if (age <= 64) tvH = 4.5 * 7;
+      else tvH = 5.5 * 7;
+      if (Math.abs(age - state.currentAge) < 5) tvH = state.tvHoursPerDay * 7;
 
       const totalObligatory = sleepH + workH + schoolH + eatingH + groomingH + choresH + commuteH + socialH + tvH;
       const freeH = Math.max(0, 168 - totalObligatory);
 
-      let dominantColorHex = '#3A86FF'; // sleep fallback
-      let maxH = sleepH;
-      let category = 'Sleep';
+      // Dominant = biggest WAKING obligation (sleep excluded — at 56h/week it
+      // always wins, conveying no life-stage info). Start from freeH so free
+      // time shows when nothing else beats it.
+      let dominantColorHex = '#00F5D4';
+      let maxH = freeH;
+      let category = 'Free Time';
 
       if (workH > maxH) { maxH = workH; dominantColorHex = '#FF006E'; category = 'Work'; }
       if (schoolH > maxH) { maxH = schoolH; dominantColorHex = '#FFBE0B'; category = 'School'; }
@@ -65,7 +76,6 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       if (commuteH > maxH) { maxH = commuteH; dominantColorHex = '#FB5607'; category = 'Commute'; }
       if (socialH > maxH) { maxH = socialH; dominantColorHex = '#F72585'; category = 'Social Media'; }
       if (tvH > maxH) { maxH = tvH; dominantColorHex = '#9B5DE5'; category = 'TV'; }
-      if (freeH > maxH) { maxH = freeH; dominantColorHex = '#00F5D4'; category = 'Free Time'; }
 
       const isPast = i < currentWeek;
       const isCurrent = i === currentWeek;
@@ -94,7 +104,7 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
     const posOf = (idx: number) => {
       const col = idx % cols;
       const row = Math.floor(idx / cols);
-      return { x: col * totalSqWidth, y: row * totalSqWidth };
+      return { x: Math.floor(col * totalSqWidth), y: Math.floor(row * totalSqWidth) };
     };
 
     const drawStaticSquare = (idx: number) => {
@@ -152,7 +162,7 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       width = containerRef.current?.clientWidth || 800;
       const isMobile = window.innerWidth < 640;
       sqSize = isMobile ? 5 : 7;
-      const gap = isMobile ? 1 : 1.5;
+      const gap = 2; // integer gap eliminates sub-pixel rendering artifacts
       totalSqWidth = sqSize + gap;
       cols = Math.max(1, Math.floor(width / totalSqWidth));
       const rows = Math.ceil(totalWeeks / cols);
@@ -227,9 +237,20 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       <canvas ref={canvasRef} className="block mx-auto cursor-crosshair" />
       
       {tooltipData && (
-        <div 
-          className="fixed pointer-events-none z-50 bg-foreground text-background font-mono text-xs px-3 py-2 rounded shadow-lg transform -translate-x-1/2 -translate-y-full mt-[-10px]"
-          style={{ left: tooltipData.x, top: tooltipData.y }}
+        <div
+          className="fixed pointer-events-none font-mono text-xs transform -translate-x-1/2 -translate-y-full"
+          style={{
+            left: tooltipData.x,
+            top: tooltipData.y,
+            marginTop: '-10px',
+            zIndex: 9999,
+            background: 'rgba(15,15,15,0.95)',
+            color: '#fff',
+            border: '1px solid rgba(255,255,255,0.1)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+            padding: '8px 12px',
+            borderRadius: '6px',
+          }}
         >
           <div className="font-bold">Week {tooltipData.week} · Age {Math.floor(tooltipData.age)}</div>
           <div className="opacity-80">{tooltipData.freeH.toFixed(1)}h free this week</div>

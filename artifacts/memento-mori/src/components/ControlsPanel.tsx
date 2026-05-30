@@ -71,7 +71,7 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
             <input 
               type="number" 
               value={state.currentAge} 
-              onChange={e => state.setCurrentAge(parseInt(e.target.value) || 0)}
+              onChange={e => { const v = parseInt(e.target.value); if (!isNaN(v) && v >= 1 && v <= 100) state.setCurrentAge(v); }}
               className="w-full bg-background border border-border px-3 py-2 text-sm font-mono font-bold focus:outline-none focus:border-accent"
               min={1} max={100}
             />

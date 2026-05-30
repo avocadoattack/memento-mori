@@ -26,7 +26,7 @@ export function CustomSlider({ value, min, max, step = 1, onChange, color, isOve
       value={value}
       onChange={(e) => onChange(parseFloat(e.target.value))}
       className={`custom-slider ${isOverridden ? 'ring-1 ring-accent ring-offset-1 ring-offset-background' : ''}`}
-      style={bgStyle}
+      style={{ ...bgStyle, touchAction: 'none' }}
     />
   );
 }

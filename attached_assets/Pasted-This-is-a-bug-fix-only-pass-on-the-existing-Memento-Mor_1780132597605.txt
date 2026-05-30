@@ -1,0 +1,67 @@
+This is a bug-fix-only pass on the existing Memento Mori: Time Audit app.
+Do NOT add features or change design. Fix only the issues listed below, one at a time.
+
+---
+
+BUG 1 — SLIDER DRAG NOT WORKING
+Sliders only respond to clicks, not dragging.
+Root cause: likely a CSS issue where `pointer-events` is disabled on the thumb, or the track overlay div is intercepting mouse events.
+Fix:
+- Ensure every `<input type="range">` element has no overlapping sibling div that captures pointer events
+- Verify each slider uses `onChange={e => setState(parseFloat(e.target.value))}` — NOT `onClick` or `onMouseUp`
+- Add `style={{ touchAction: 'none' }}` to each range input for mobile drag support
+- Test that dragging (not just clicking) updates the value live
+
+---
+
+BUG 2 — CANVAS GRID MAZE-LIKE GLITCH
+There are unintended connecting lines between squares creating a maze pattern.
+Root cause: likely integer rounding errors in x/y coordinate calculations, or a missing `ctx.beginPath()` between draw calls, or the gap/size math accumulating float errors.
+Fix:
+- Replace any float arithmetic in coordinate calculation with: `const x = Math.floor(col * (SQUARE_SIZE + GAP))` and `const y = Math.floor(row * (SQUARE_SIZE + GAP))`
+- Ensure SQUARE_SIZE and GAP are integer constants (e.g., `const SQUARE_SIZE = 7; const GAP = 2`)
+- Do NOT use `ctx.beginPath()` / `ctx.stroke()` for squares — use ONLY `ctx.fillRect(x, y, SQUARE_SIZE, SQUARE_SIZE)` with no strokes
+- Clear the entire canvas before each redraw: `ctx.clearRect(0, 0, canvas.width, canvas.height)`
+
+---
+
+BUG 3 — GRID COLORS INCORRECT (only 2-3 colors showing instead of all 10)
+The dominant-color logic is broken — most squares show only Sleep, Work, or Free Time instead of all categories.
+Fix:
+- Rewrite the `getDominantCategory(weekIndex)` function so it correctly calculates hours per category for each specific week, considering life stage:
+  - School hours: only weeks where `weekAge >= schoolStartAge && weekAge <= (schoolStartAge + schoolYears)`
+  - Work hours: only weeks where `weekAge >= workStartAge && weekAge <= retirementAge`
+  - Commute hours: same range as work
+  - All other categories (sleep, eating, grooming, chores, social media, TV, streaming): apply across full lifespan
+- The dominant category is whichever has the MOST hours in that specific week
+- If freeHours for a week > 0 and no category exceeds it: dominant = "freeTime"
+- Log the first 10 weeks' category assignments to console to verify correctness during testing
+
+---
+
+BUG 4 — AGE CHANGE DOES NOT UPDATE STATS IN REAL TIME
+Changing the Age input does not recalculate the stat cards, perspective lines, or free hours counter.
+Root cause: age is likely not in the dependency array of the calculation useMemo/useEffect.
+Fix:
+- Audit every `useMemo` and `useEffect` that computes derived stats — ensure `age`, `gender`, `country`, and `lifeExpectancy` are ALL in each dependency array
+- If calculations are done inline in render, confirm they reference the live state value not a stale closure
+- After fix: changing age from 30 to 50 should immediately update all stat cards, the countdown, the grid, and the motivational copy
+
+---
+
+BUG 5 — TOOLTIPS HAVE TRANSPARENT/UNCLEAR BACKGROUND
+Hover tooltips over the grid and sliders are hard to read because the background is transparent or too light.
+Fix:
+- All tooltips: `background: rgba(15, 15, 15, 0.95)` in dark mode, `background: rgba(255, 255, 255, 0.97)` in light mode
+- Add `border: 1px solid rgba(255,255,255,0.1)` in dark mode, `border: 1px solid rgba(0,0,0,0.15)` in light mode
+- Add `backdrop-filter: none` (remove any blur that causes transparency)
+- Add `box-shadow: 0 4px 12px rgba(0,0,0,0.4)`
+- Text: always high contrast — white text on dark tooltip, near-black text on light tooltip
+- Add `z-index: 9999` to ensure tooltips appear above all other elements
+- Add `padding: 8px 12px` and `border-radius: 6px`
+
+---
+
+After fixing each bug, output: ✅ Bug [N] fixed — [one line summary]
+Do NOT change any other code. Do NOT add any features.
+At the end, list every file modified.
