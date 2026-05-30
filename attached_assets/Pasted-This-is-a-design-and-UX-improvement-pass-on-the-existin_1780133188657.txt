@@ -1,0 +1,108 @@
+This is a design and UX improvement pass on the existing Memento Mori: Time Audit app.
+Do NOT fix bugs (already done) or add new data features. Apply only what is listed here.
+
+---
+
+CHANGE 1 — HERO TITLE
+
+Replace "YOUR LIFE IN WEEKS" with "MEMENTO MORI" in the same bold uppercase style but 20% larger font size.
+Directly below it, add a subtitle: "Remember, you will die."
+Style the subtitle in a cursive/script font — load "Cormorant Garamond" from Google Fonts (italic weight), set at ~22px, low opacity (0.7), centered. It should feel like a whisper under the loud headline.
+
+---
+
+CHANGE 2 — COUNTDOWN SPACING
+
+In the countdown clock row (Years · Months · Weeks · Days · Hours · Mins · Secs):
+- Increase horizontal spacing between each unit by 50% (more breathing room between the numbers)
+- Add a thin vertical separator `|` at 20% opacity between each unit, except between the last two
+- Make the unit labels (YEARS, MONTHS, etc.) slightly smaller (10px) and more spaced-out with `letter-spacing: 0.2em`
+
+---
+
+CHANGE 3 — REPLACE "FREE WEEKENDS" CARD WITH "FREE YEARS"
+
+The Free Weekends card is not impactful enough. Replace it entirely with:
+
+**FREE YEARS REMAINING**
+Formula: `(freeHoursRemaining / 8760).toFixed(1)` years
+Label: "Years of life that are truly yours"
+Style: same card styling as Free Saturdays, same accent color treatment
+Place it alongside the Free Saturdays card — both at the same visual weight
+
+---
+
+CHANGE 4 — "FREE HOURS" MAIN CARD → "FREE DAYS"
+
+In the hero section, the main counter currently shows "Free Hours Remaining".
+Change this to show FREE DAYS instead:
+Formula: `Math.floor(freeHoursRemaining / 24)`
+Label: "Free Days Remaining"
+Subtext below the number (small, 70% opacity): "Days with no obligations — after everything is subtracted"
+Update this value in real time as inputs change (same as the hours counter did).
+
+---
+
+CHANGE 5 — DECADE GROUPINGS ON GRID WITH AGE LABELS
+
+Add visual decade grouping to the canvas grid:
+- Every 10 years (520 squares), draw a slightly thicker gap: increase the row spacing by 4px after row 520, 1040, 1560, etc.
+- To the left of each decade group's first row, draw a small age label: "10", "20", "30", "40", "50", "60", "70", "80" — use `ctx.fillText()` with a small font (10px), muted color (50% opacity), right-aligned to a 24px left margin
+- Add a 24px left padding to the canvas draw area to make room for these labels
+- The "0" / birth label: at the very first square, draw a small 👶 emoji using `ctx.fillText('👶', x - 20, y + 6)`
+- The final year: next to the last square row, draw a small ☠️ emoji using `ctx.fillText('☠️', x + squareWidth + 4, y + 6)` — position it at the end of the last decade row
+
+---
+
+CHANGE 6 — GRAY OUT PAST WEEKS CORRECTLY
+
+Squares representing weeks already lived (weekIndex < currentAgeInWeeks) should be drawn in a flat gray:
+- Color: `#4A4A4A` in dark mode, `#BBBBBB` in light mode
+- Opacity: 1.0 (fully opaque gray — not a color with reduced opacity, which causes the "faded color" look)
+- Do NOT use the category color at reduced opacity — use a true neutral gray
+- This makes it visually clear: colorful = future life, gray = past life
+
+---
+
+CHANGE 7 — RENAME "TAKEN TIME BREAKDOWN" 
+
+Rename the section/label "Taken Time Breakdown" to: **"Where Your Life Goes"**
+Apply this rename everywhere it appears (section header, any aria labels, any chart title).
+
+---
+
+CHANGE 8 — COLOR BAR "WHERE YOUR LIFE GOES" — ADD HOVER TOOLTIPS
+
+The horizontal stacked color bar below the stats needs hover tooltips.
+For each colored segment in the bar:
+- On hover: show a tooltip with the category name + hours + percentage of total life
+- Format: "[Category Name] · [X,XXX] hrs · [Y.Y]% of life"
+- Use the same tooltip styling from Bug Fix 5 (dark solid background, white text, shadow)
+- Implement using `onMouseEnter` / `onMouseLeave` on each segment div, with a positioned tooltip div
+
+---
+
+CHANGE 9 — COPY: "DATA-DRIVEN DEFAULTS" → "DATA-BACKED DEFAULTS"
+
+Find every instance of "Data-driven defaults" or "Data-driven Defaults" in the codebase and replace with "Data-backed Defaults". This is a copy change only.
+
+---
+
+CHANGE 10 — ICONS FOR PARAMETER SECTIONS
+
+Add a small SVG icon (from lucide-react) to the left of each section header in the Parameters panel. Use these mappings:
+- Your Profile → `User` icon
+- Sleep → `Moon` icon
+- Work → `Briefcase` icon
+- Education → `GraduationCap` icon
+- Daily Habits → `Coffee` icon
+- Commute → `Car` icon
+- Time Wasters → `Smartphone` icon
+
+Style: 16px, same color as the section header text, `opacity: 0.8`, `margin-right: 8px`, vertically centered with the label.
+
+---
+
+After completing each change, output: ✅ Change [N] complete
+Do NOT touch bug fixes or add new data. Do NOT add new npm packages.
+At the end, list every file modified.

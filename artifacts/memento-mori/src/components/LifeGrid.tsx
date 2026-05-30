@@ -93,39 +93,85 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
 
     const accent = getComputedStyle(document.documentElement)
       .getPropertyValue('--accent').trim() || '#E63946';
+    const fgColor = getComputedStyle(document.documentElement)
+      .getPropertyValue('--foreground').trim() || '#1A1A1A';
+    const isDark = document.documentElement.classList.contains('dark');
+    const pastColor = isDark ? '#4A4A4A' : '#BBBBBB';
+
+    const LABEL_WIDTH = 24;
+    const DECADE_GAP = 4;
 
     let cols = 1;
     let sqSize = 7;
-    let totalSqWidth = 8.5;
+    let totalSqWidth = 9;
     let width = 800;
     let height = 0;
+    let rowsCount = 0;
     let rafId: number | null = null;
+
+    // y for a given row, accounting for accumulated decade gaps every 520 weeks
+    const getRowY = (row: number): number => {
+      const decadesPassed = Math.floor((row * cols) / 520);
+      return Math.floor(row * totalSqWidth) + decadesPassed * DECADE_GAP;
+    };
 
     const posOf = (idx: number) => {
       const col = idx % cols;
       const row = Math.floor(idx / cols);
-      return { x: Math.floor(col * totalSqWidth), y: Math.floor(row * totalSqWidth) };
+      return {
+        x: LABEL_WIDTH + Math.floor(col * totalSqWidth),
+        y: getRowY(row),
+      };
     };
 
+    // Change 6: flat neutral gray for past weeks — no category color at reduced opacity
     const drawStaticSquare = (idx: number) => {
       const sq = squares[idx];
       if (!sq) return;
       const { x, y } = posOf(idx);
-      ctx.globalAlpha = sq.isPast ? 0.3 : 1;
-      ctx.fillStyle = sq.dominantColorHex;
-      ctx.fillRect(x, y, sqSize, sqSize);
       ctx.globalAlpha = 1;
+      ctx.fillStyle = sq.isPast ? pastColor : sq.dominantColorHex;
+      ctx.fillRect(x, y, sqSize, sqSize);
+    };
+
+    // Change 5: age decade labels + birth/death emojis in the left margin
+    const drawLabels = () => {
+      ctx.save();
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = fgColor;
+
+      ctx.font = '10px serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('👶', LABEL_WIDTH / 2, getRowY(0) + sqSize);
+
+      ctx.font = 'bold 9px Inter, sans-serif';
+      ctx.textAlign = 'right';
+      for (let decade = 1; decade <= 8; decade++) {
+        const weekIdx = decade * 520;
+        if (weekIdx >= totalWeeks) break;
+        const row = Math.floor(weekIdx / cols);
+        ctx.fillText(String(decade * 10), LABEL_WIDTH - 3, getRowY(row) + sqSize - 1);
+      }
+
+      if (totalWeeks > 0) {
+        const lastSq = posOf(totalWeeks - 1);
+        ctx.font = '10px serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('☠️', lastSq.x + sqSize + 4, lastSq.y + sqSize);
+      }
+
+      ctx.restore();
     };
 
     const drawAllStatic = () => {
       ctx.clearRect(0, 0, width, height);
       for (let i = 0; i < totalWeeks; i++) drawStaticSquare(i);
+      drawLabels();
     };
 
     // Animate ONLY the current-week cell. Each frame we clear a small padded
-    // region around it, redraw the static neighbours that fall inside that
-    // region, then draw the pulsing cell on top. This keeps per-frame work to
-    // ~a dozen cells instead of the full ~4,000-cell grid.
+    // region around it, redraw the static neighbours, then draw the pulsing
+    // cell on top. Keeps per-frame work to ~a dozen cells instead of ~4,000.
     const animatePulse = (time: number) => {
       if (currentWeek >= 0 && currentWeek < totalWeeks) {
         const pad = sqSize + 12;
@@ -146,6 +192,9 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
           }
         }
 
+        // Redraw labels — for first-column cells the clear region overlaps the margin
+        drawLabels();
+
         const scale = 1 + ((Math.sin(time / 300) + 1) / 2) * 0.25;
         const offset = (sqSize * scale - sqSize) / 2;
         ctx.save();
@@ -162,11 +211,12 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       width = containerRef.current?.clientWidth || 800;
       const isMobile = window.innerWidth < 640;
       sqSize = isMobile ? 5 : 7;
-      const gap = 2; // integer gap eliminates sub-pixel rendering artifacts
+      const gap = 2;
       totalSqWidth = sqSize + gap;
-      cols = Math.max(1, Math.floor(width / totalSqWidth));
-      const rows = Math.ceil(totalWeeks / cols);
-      height = rows * totalSqWidth;
+      // Reserve LABEL_WIDTH pixels on left for decade labels
+      cols = Math.max(1, Math.floor((width - LABEL_WIDTH) / totalSqWidth));
+      rowsCount = Math.ceil(totalWeeks / cols);
+      height = getRowY(rowsCount - 1) + totalSqWidth + DECADE_GAP;
 
       const dpr = window.devicePixelRatio || 1;
       canvas.width = width * dpr;
@@ -192,14 +242,22 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
 
     const handleMouseMove = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
 
-      const col = Math.floor(x / totalSqWidth);
-      const row = Math.floor(y / totalSqWidth);
+      if (mouseX < LABEL_WIDTH) { setTooltipData(null); return; }
+      const col = Math.floor((mouseX - LABEL_WIDTH) / totalSqWidth);
       if (col < 0 || col >= cols) { setTooltipData(null); return; }
-      const index = row * cols + col;
 
+      // Row lookup uses decade-aware y positions (non-linear)
+      let hoveredRow = -1;
+      for (let r = 0; r < rowsCount; r++) {
+        const rowY = getRowY(r);
+        if (mouseY >= rowY && mouseY < rowY + sqSize) { hoveredRow = r; break; }
+      }
+      if (hoveredRow === -1) { setTooltipData(null); return; }
+
+      const index = hoveredRow * cols + col;
       if (index >= 0 && index < totalWeeks) {
         setTooltipData({
           x: e.clientX,
@@ -207,7 +265,7 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
           week: index + 1,
           age: squares[index].age,
           freeH: squares[index].freeH,
-          category: squares[index].category
+          category: squares[index].category,
         });
       } else {
         setTooltipData(null);

@@ -16,9 +16,12 @@ export default function Home() {
       {/* Hero Section */}
       <div className="pt-16 pb-12 px-4 w-full max-w-[1200px] mx-auto">
         <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-mono tracking-tighter mb-4">
-            YOUR LIFE IN WEEKS
+          <h1 className="text-5xl md:text-7xl lg:text-[85px] font-bold font-mono tracking-tighter mb-3">
+            MEMENTO MORI
           </h1>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '22px', opacity: 0.7 }} className="mb-3">
+            Remember, you will die.
+          </p>
           <p className="text-lg md:text-xl opacity-70 max-w-2xl mx-auto">
             After sleep, work, and everything else — here's what's actually left.
           </p>
