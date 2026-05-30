@@ -60,17 +60,13 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
     <div
       className="font-sans bg-background text-foreground selection:bg-accent selection:text-white"
       style={{
-        position: 'fixed',
-        inset: 0,
-        width: '100vw',
-        height: '100vh',
+        width: '100%',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        overflowY: 'auto',
-        boxSizing: 'border-box',
+        textAlign: 'center',
         padding: '40px 24px',
+        boxSizing: 'border-box',
         opacity: exiting ? 0 : 1,
         transition: 'opacity 0.4s ease',
       }}
@@ -87,11 +83,11 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
         }}
       >
         {/* Header */}
-        <div className="text-center mb-10" style={{ width: '100%', textAlign: 'center', alignItems: 'center' }}>
-          <h1 className="font-bold font-mono tracking-tighter" style={{ fontSize: 'clamp(48px, 8vw, 96px)', marginBottom: '8px', whiteSpace: 'nowrap', textAlign: 'center', width: '100%', display: 'block', alignItems: 'center', alignSelf: 'center' }}>
+        <div className="text-center mb-10" style={{ width: '100%', textAlign: 'center' }}>
+          <h1 className="font-mono tracking-tighter" style={{ textAlign: 'center', width: '100%', whiteSpace: 'nowrap', fontSize: 'clamp(40px, 7vw, 88px)', fontWeight: 900 }}>
             MEMENTO MORI
           </h1>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 'clamp(24px, 3.5vw, 40px)', opacity: 0.85, textAlign: 'center', width: '100%', display: 'block', alignItems: 'center', alignSelf: 'center' }}>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 'clamp(24px, 3.5vw, 40px)', opacity: 0.85, textAlign: 'center', width: '100%' }}>
             Remember death
           </p>
           <p style={{ fontSize: '14px', opacity: 0.6, marginTop: '12px' }}>
