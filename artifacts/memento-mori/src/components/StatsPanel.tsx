@@ -99,6 +99,7 @@ export function StatsPanel({ stats }: Props) {
             <div title="Commute" className="h-full bg-[var(--cat-commute)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.commuteHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Commuting', stats.commuteHours_total)} onMouseLeave={() => setBarTooltip(null)} />
             <div title="Social Media" className="h-full bg-[var(--cat-social)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.socialMediaHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Social Media', stats.socialMediaHours_total)} onMouseLeave={() => setBarTooltip(null)} />
             <div title="TV" className="h-full bg-[var(--cat-tv)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.tvHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Passive TV', stats.tvHours_total)} onMouseLeave={() => setBarTooltip(null)} />
+            <div title="Streaming" className="h-full bg-[var(--cat-streaming)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.streamingHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Streaming', stats.streamingHours_total)} onMouseLeave={() => setBarTooltip(null)} />
           </div>
         </div>
 
@@ -140,6 +141,11 @@ export function StatsPanel({ stats }: Props) {
           title="Passive TV" value={stats.tvHours_total} color="var(--cat-tv)"
           perspectiveLine={`${stats.tvHours_total.toLocaleString(undefined, {maximumFractionDigits:0})} hours = ${Math.round(stats.tvHours_total/1).toLocaleString()} gym sessions you could have done`}
           secondaryPerspective={`Or ${Math.round(stats.tvHours_total/49).toLocaleString()} complete rewatches of Breaking Bad`}
+        />
+        <StatCard
+          title="Streaming" value={stats.streamingHours_total} color="var(--cat-streaming)"
+          perspectiveLine={`${Math.round(stats.streamingHours_total).toLocaleString()} hours streaming = ${Math.round(stats.streamingHours_total/30).toLocaleString()} complete Netflix series binged`}
+          secondaryPerspective={`That's ${(stats.streamingYearsLost).toFixed(1)} years of your life on SVOD`}
         />
       </div>
 

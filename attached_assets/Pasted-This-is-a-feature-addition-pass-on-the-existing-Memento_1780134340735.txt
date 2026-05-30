@@ -1,0 +1,120 @@
+This is a feature addition pass on the existing Memento Mori: Time Audit app.
+Do NOT change anything already working. Add only the two features below.
+
+---
+
+FEATURE 1 — REPLACE EDUCATION SLIDERS WITH LEVEL TOGGLE BUTTONS
+
+Remove the two sliders in the Education section ("Years of schooling" and "Hours per school day").
+Replace them with a set of toggleable education level buttons. Each button can be toggled ON or OFF independently. The total education time is calculated as the sum of all active levels.
+
+Use these education levels with their hardcoded hour values:
+
+```js
+const educationLevels = [
+  {
+    id: 'primary',
+    label: 'Primary School',
+    sublabel: 'Ages 5–11',
+    years: 6,
+    hoursPerDay: 5.5,
+    daysPerYear: 180,
+    // total: 6 × 180 × 5.5 = 5,940 hrs
+  },
+  {
+    id: 'middle',
+    label: 'Middle School',
+    sublabel: 'Ages 11–14',
+    years: 3,
+    hoursPerDay: 6.0,
+    daysPerYear: 180,
+    // total: 3 × 180 × 6.0 = 3,240 hrs
+  },
+  {
+    id: 'highschool',
+    label: 'High School',
+    sublabel: 'Ages 14–18',
+    years: 4,
+    hoursPerDay: 6.5,
+    daysPerYear: 180,
+    // total: 4 × 180 × 6.5 = 4,680 hrs
+  },
+  {
+    id: 'bachelors',
+    label: "Bachelor's",
+    sublabel: '4 years',
+    years: 4,
+    hoursPerDay: 5.0,
+    daysPerYear: 220,
+    // total: 4 × 220 × 5.0 = 4,400 hrs
+  },
+  {
+    id: 'masters',
+    label: "Master's",
+    sublabel: '2 years',
+    years: 2,
+    hoursPerDay: 6.0,
+    daysPerYear: 220,
+    // total: 2 × 220 × 6.0 = 2,640 hrs
+  },
+  {
+    id: 'phd',
+    label: 'PhD',
+    sublabel: '4 years avg',
+    years: 4,
+    hoursPerDay: 8.0,
+    daysPerYear: 250,
+    // total: 4 × 250 × 8.0 = 8,000 hrs
+  }
+]
+```
+
+Default state: Primary, Middle, and High School toggled ON. Bachelor's, Master's, PhD toggled OFF.
+
+UI: render as a row of small pill/chip buttons. Active state: filled in the Education category color (#FFBE0B) with dark text. Inactive: ghost style (border only). Show below all buttons: "Total education time: [X,XXX] hours ([Y.Y] years)"
+
+The totalSchoolHours passed to the calculation engine = sum of hours from all active levels.
+
+---
+
+FEATURE 2 — ADD STREAMING (SVOD) TO TIME WASTERS
+
+Add a new slider to the Time Wasters section:
+
+Label: "Streaming (Netflix, Hulu, Prime, etc.)"
+Category color: #7B2D8B (a distinct purple, different from TV and Social Media)
+
+Default values by age bracket (based on Nielsen 2025, SQ Magazine H1 2025 data — streaming = ~47% of total TV time, ~1.75h/day overall, skewing higher for younger adults):
+```js
+const streamingDefaults = {
+  '13-17': 2.0,   // digital-native teens, heavy Netflix/YouTube
+  '18-24': 2.0,   // most active streaming cohort
+  '25-34': 1.75,  // strong Netflix usage (26% watch several times/day)
+  '35-44': 1.5,
+  '45-54': 1.25,
+  '55-64': 1.0,
+  '65+':   0.75   // still more traditional TV
+}
+```
+
+Range: 0–6h, step: 0.25
+Mark as age-dynamic with the "auto" badge (same system as Social Media slider).
+Tooltip: "Source: Nielsen 2025, SQ Magazine H1 2025 · North America VOD avg: ~1.15h/day · Streaming now captures ~47% of total TV time. Excludes YouTube."
+
+Show below the slider: "Estimated years of your life: [X.X years]" — same format as Social Media and TV sliders.
+
+Add "Streaming" to:
+- The stat cards section (new card, same style as TV card)
+- The "Where Your Life Goes" color bar (new segment)
+- The canvas grid dominant-color logic
+- The category color legend below the grid
+
+Perspective line for the Streaming stat card:
+`[hours] hours streaming = [n] complete Netflix series binged`
+Formula: `Math.round(hours / 30)` — average series ~30h total
+
+---
+
+After completing each feature, output: ✅ Feature [N] complete
+Do NOT change any existing feature. Stop and ask if adding Streaming to the canvas color logic would require rewriting the getDominantCategory function beyond a simple addition.
+At the end, list every file modified.

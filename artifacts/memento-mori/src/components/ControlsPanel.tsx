@@ -1,6 +1,7 @@
 import React from 'react';
 import { CustomSlider } from './CustomSlider';
 import { LIFE_EXPECTANCY } from '../lib/lifeExpectancy';
+import { EDUCATION_LEVELS } from '../lib/educationLevels';
 import { Info, User, Moon, Briefcase, GraduationCap, Coffee, Car, Smartphone } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -20,10 +21,10 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
   );
 
   const ControlRow = ({
-    label, value, min, max, step, onChange, color, tooltip, secondaryLabel, name
+    label, value, min, max, step, onChange, color, tooltip, name
   }: any) => {
     const isOverridden = state.overrides[name];
-    const isAuto = ['workHoursPerWeek', 'workStartAge', 'retirementAge', 'socialMediaHoursPerDay', 'tvHoursPerDay'].includes(name) && !isOverridden;
+    const isAuto = ['workHoursPerWeek', 'workStartAge', 'retirementAge', 'socialMediaHoursPerDay', 'tvHoursPerDay', 'streamingHoursPerDay'].includes(name) && !isOverridden;
 
     return (
       <div className="mb-5">
@@ -48,14 +49,13 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
           </span>
         </div>
         <CustomSlider value={value} min={min} max={max} step={step} onChange={onChange} color={color} isOverridden={isOverridden} />
-        {secondaryLabel && (
-          <div className="text-[10px] uppercase tracking-wide opacity-50 mt-1.5 font-bold">
-            {secondaryLabel}
-          </div>
-        )}
       </div>
     );
   };
+
+  const eduTotalHours = EDUCATION_LEVELS
+    .filter((l: typeof EDUCATION_LEVELS[0]) => state.selectedEducationLevels.includes(l.id))
+    .reduce((sum: number, l: typeof EDUCATION_LEVELS[0]) => sum + l.years * l.daysPerYear * l.hoursPerDay, 0);
 
   return (
     <div className="bg-card border border-border p-5 md:p-6 shadow-sm overflow-hidden h-full flex flex-col">
@@ -85,15 +85,11 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
               <button
                 onClick={() => state.setGender('male')}
                 className={`flex-1 text-xs font-bold uppercase py-1.5 transition-colors ${state.gender === 'male' ? 'bg-card shadow-sm text-foreground' : 'opacity-50'}`}
-              >
-                M
-              </button>
+              >M</button>
               <button
                 onClick={() => state.setGender('female')}
                 className={`flex-1 text-xs font-bold uppercase py-1.5 transition-colors ${state.gender === 'female' ? 'bg-card shadow-sm text-foreground' : 'opacity-50'}`}
-              >
-                F
-              </button>
+              >F</button>
             </div>
           </div>
         </div>
@@ -127,9 +123,7 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
                 <input
                   type="number"
                   value={state.customLifeExp}
-                  min={50}
-                  max={120}
-                  step={0.1}
+                  min={50} max={120} step={0.1}
                   onChange={e => state.setCustomLifeExp(parseFloat(e.target.value) || 50)}
                   className="w-20 bg-card border border-border px-2 py-1 text-sm font-mono font-bold text-accent text-right focus:outline-none focus:border-accent"
                 />
@@ -142,9 +136,7 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
                   state.setOverrideLifeExp(!state.overrideLifeExp);
                 }}
                 className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 border transition-colors ${state.overrideLifeExp ? 'bg-accent text-white border-accent' : 'border-border opacity-60 hover:opacity-100'}`}
-              >
-                Override
-              </button>
+              >Override</button>
             </div>
           </div>
           <div className="text-[10px] uppercase tracking-widest opacity-40 font-bold mt-2">Source: UN WPP 2024</div>
@@ -161,8 +153,28 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
         </div>
 
         <SectionTitle icon={GraduationCap}>Education</SectionTitle>
-        <ControlRow name="schoolYears" label="Years of schooling" value={state.schoolYears} min={0} max={25} step={1} onChange={state.setSchoolYears} color="var(--cat-school)" tooltip="K–12 = 13 yrs · +College = 17 yrs" />
-        <ControlRow name="schoolHoursPerDay" label="Hours per school day" value={state.schoolHoursPerDay} min={4} max={10} step={0.5} onChange={state.setSchoolHoursPerDay} color="var(--cat-school)" />
+        <div className="flex flex-wrap gap-2 mb-3">
+          {EDUCATION_LEVELS.map((level: typeof EDUCATION_LEVELS[0]) => {
+            const isActive = state.selectedEducationLevels.includes(level.id);
+            return (
+              <button
+                key={level.id}
+                onClick={() => state.toggleEducationLevel(level.id)}
+                className={`flex flex-col items-start px-3 py-2 text-xs font-bold border transition-colors ${
+                  isActive
+                    ? 'bg-[#FFBE0B] text-[#1A1A1A] border-[#FFBE0B]'
+                    : 'bg-transparent border-border text-foreground/60 hover:border-foreground/40'
+                }`}
+              >
+                <span>{level.label}</span>
+                <span className={`text-[10px] font-normal ${isActive ? 'opacity-70' : 'opacity-50'}`}>{level.sublabel}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="text-xs font-bold opacity-50 mb-4">
+          Total education time: {Math.round(eduTotalHours).toLocaleString()} hours ({(eduTotalHours / 8760).toFixed(1)} years)
+        </div>
 
         <SectionTitle icon={Coffee}>Daily Habits (Hours/Day)</SectionTitle>
         <ControlRow name="eatingHoursPerDay" label="Eating & Prep" value={state.eatingHoursPerDay} min={0.5} max={4} step={0.25} onChange={state.setEatingHoursPerDay} color="var(--cat-eating)" tooltip="US avg ~67min eating + ~30min food prep" />
@@ -186,6 +198,13 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
           value={state.tvHoursPerDay} min={0} max={10} step={0.25}
           onChange={state.setTvHoursPerDay} color="var(--cat-tv)"
           tooltip="Source: BLS American Time Use Survey — TV watching increases significantly with age."
+        />
+        <ControlRow
+          name="streamingHoursPerDay"
+          label="Streaming (Netflix, Hulu, Prime, etc.)"
+          value={state.streamingHoursPerDay} min={0} max={6} step={0.25}
+          onChange={state.setStreamingHoursPerDay} color="var(--cat-streaming)"
+          tooltip="Source: Nielsen 2025, SQ Magazine H1 2025 · North America VOD avg: ~1.15h/day · Streaming now captures ~47% of total TV time. Excludes YouTube."
         />
 
         <button

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { EDUCATION_LEVELS } from '../lib/educationLevels';
 
 interface Props {
   state: any;
@@ -23,8 +24,12 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       let schoolH = 0;
       let commuteH = 0;
 
-      if (age >= 5 && age < 5 + state.schoolYears) {
-        schoolH = state.schoolHoursPerDay * 5;
+      for (const level of EDUCATION_LEVELS) {
+        if ((state.selectedEducationLevels as string[]).includes(level.id)
+            && age >= level.startAge && age < level.endAge) {
+          schoolH = level.hoursPerDay * (level.daysPerYear / 52);
+          break;
+        }
       }
       if (age >= state.workStartAge && age < state.retirementAge) {
         workH = state.workHoursPerWeek;
@@ -58,7 +63,17 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       else tvH = 5.5 * 7;
       if (Math.abs(age - state.currentAge) < 5) tvH = state.tvHoursPerDay * 7;
 
-      const totalObligatory = sleepH + workH + schoolH + eatingH + groomingH + choresH + commuteH + socialH + tvH;
+      // Age-adjusted streaming hours (Nielsen 2025 / SQ Magazine H1 2025)
+      let streamH: number;
+      if (age <= 24) streamH = 2.0 * 7;
+      else if (age <= 34) streamH = 1.75 * 7;
+      else if (age <= 44) streamH = 1.5 * 7;
+      else if (age <= 54) streamH = 1.25 * 7;
+      else if (age <= 64) streamH = 1.0 * 7;
+      else streamH = 0.75 * 7;
+      if (Math.abs(age - state.currentAge) < 5) streamH = state.streamingHoursPerDay * 7;
+
+      const totalObligatory = sleepH + workH + schoolH + eatingH + groomingH + choresH + commuteH + socialH + tvH + streamH;
       const freeH = Math.max(0, 168 - totalObligatory);
 
       // Dominant = biggest WAKING obligation (sleep excluded — at 56h/week it
@@ -76,6 +91,7 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       if (commuteH > maxH) { maxH = commuteH; dominantColorHex = '#FB5607'; category = 'Commute'; }
       if (socialH > maxH) { maxH = socialH; dominantColorHex = '#F72585'; category = 'Social Media'; }
       if (tvH > maxH) { maxH = tvH; dominantColorHex = '#9B5DE5'; category = 'TV'; }
+      if (streamH > maxH) { maxH = streamH; dominantColorHex = '#7B2D8B'; category = 'Streaming'; }
 
       const isPast = i < currentWeek;
       const isCurrent = i === currentWeek;
@@ -326,6 +342,7 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
         <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#FB5607]"></span> Commute</div>
         <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#F72585]"></span> Social Media</div>
         <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#9B5DE5]"></span> TV</div>
+        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#7B2D8B]"></span> Streaming</div>
         <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#00F5D4]"></span> Free Time</div>
       </div>
     </div>
