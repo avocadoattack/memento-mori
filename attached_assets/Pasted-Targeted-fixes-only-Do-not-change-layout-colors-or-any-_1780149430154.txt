@@ -1,0 +1,92 @@
+Targeted fixes only. Do not change layout, colors, or any new features.
+
+---
+
+FIX 1 — EDUCATION: ALWAYS SHOW CALENDAR YEARS, NEVER CONTINUOUS YEARS
+
+The display "18,260 hours (2 years)" is wrong and confusing. 2 years is the continuous-time
+equivalent, not the lived experience. Fix everywhere this appears:
+
+In ControlsPanel.tsx below the education buttons:
+  REMOVE: "18,260 instruction hours (2.1 years)" or any hours÷8760 calculation
+  REPLACE WITH: "18,260 instruction hours · [N] calendar years of school"
+  Where N = sum of the .years property of ALL active education level objects (integer, no decimals)
+  Example: Primary(6) + Middle(3) + High(4) + Bachelor's(4) = "17 calendar years of school"
+
+In StatsPanel.tsx "In School" card:
+  REMOVE any "X.X years" derived from hours÷8760
+  REPLACE WITH: "[N] calendar years in classrooms"
+  Same formula: sum of .years from active levels
+
+NEVER divide education hours by 8,760 anywhere in the codebase. Search for any remaining
+instances of schoolHours / 8760 and remove them.
+
+---
+
+FIX 2 — EQUAL ROWS PER DECADE
+
+Currently some decades render 4 rows and some render 5, because the column count doesn't divide
+evenly into 520 (10 years × 52 weeks).
+
+Fix: calculate colCount so that 520 is exactly divisible by it:
+  - Compute the maximum number of columns that fit in the available canvas width:
+    maxCols = Math.floor(availableWidth / (SQUARE_SIZE + GAP))
+  - Then find the largest value ≤ maxCols where (520 % value === 0):
+    const candidates = [130, 104, 65, 52, 40, 26, 20, 13, 10, 8, 5, 4, 2, 1]
+    colCount = candidates.find(c => c <= maxCols) ?? 52
+  - This guarantees every decade = exactly 520/colCount rows (no decade gets an extra row)
+  - Recompute canvas height from the new colCount
+
+---
+
+FIX 3 — DECADE LABEL VERTICAL ALIGNMENT
+
+Each decade label (10, 20, 30...) should be vertically centered on its decade's first row,
+not at the top of it.
+
+For each HTML <span> label:
+  pixelY = Math.round((decadeWeekIndex / colCount) * (SQUARE_SIZE + GAP))
+  Set the span's top to: pixelY + Math.round((SQUARE_SIZE) / 2) + 'px'
+  Add transform: 'translateY(-50%)' to center it on the row line
+
+Also ensure all decade label spans share the same left value (e.g. left: -32px) so they
+form a clean vertical column with no horizontal jitter.
+
+---
+
+FIX 4 — GROOMING DEFAULT: GENDER-AWARE WITH DATA SOURCE
+
+Current default of 0.75h (45 min) is too low, especially for women.
+
+Research-backed defaults (source: American Time Use Survey + Euromonitor personal care surveys):
+  Male default: 0.58h/day (35 min — shower ~10min, dental ~5min, shaving ~8min, dressing ~12min)
+  Female default: 1.0h/day (60 min — shower ~15min, hair ~20min, skincare ~10min, dental ~5min, dressing ~10min)
+
+In useLifeCalc.ts or wherever grooming default is set:
+  When gender === 'M': groomingDefault = 0.58
+  When gender === 'F': groomingDefault = 1.0
+
+Update grooming default whenever gender changes (same auto-default system as Social Media).
+Mark with the "auto" badge.
+Update the StepperSlider tooltip to read:
+  "Source: BLS ATUS + Euromonitor · Male avg: ~35 min/day · Female avg: ~60 min/day"
+
+---
+
+FIX 5 — UNITS IN PARAMETERS: SHOW "h/day" NEXT TO VALUES
+
+The numeric values in the StepperSlider components show no unit, which is ambiguous.
+
+In StepperSlider.tsx, after the numeric value display, add a small unit label:
+  - For all daily habit sliders (eating, grooming, chores, commute, social media, TV, streaming):
+    show "h/day" in small text (11px, 50% opacity, same color) immediately after the number
+  - For sleep: show "h/night"
+  - For work: show "h/week"
+  - For age fields and retirement age: show nothing (already clear)
+  - For education pill buttons: no change needed
+
+Example display: "1.5 h/day" and "8.0 h/night" and "40 h/week"
+
+---
+
+Output: ✅ Fix 1–5, one line each. List all files modified.
