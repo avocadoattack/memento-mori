@@ -58,13 +58,34 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
 
   return (
     <div
-      className="min-h-[100dvh] font-sans bg-background text-foreground selection:bg-accent selection:text-white flex flex-col items-center px-4 py-12"
+      className="font-sans bg-background text-foreground selection:bg-accent selection:text-white"
       style={{
+        position: 'fixed',
+        inset: 0,
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflowY: 'auto',
+        boxSizing: 'border-box',
+        padding: '40px 24px',
         opacity: exiting ? 0 : 1,
         transition: 'opacity 0.4s ease',
       }}
     >
-      <div className="w-full max-w-[540px] flex flex-col">
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '540px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          gap: '24px',
+        }}
+      >
         {/* Header */}
         <div className="text-center mb-10" style={{ width: '100%', textAlign: 'center', alignItems: 'center' }}>
           <h1 className="font-bold font-mono tracking-tighter" style={{ fontSize: 'clamp(48px, 8vw, 96px)', marginBottom: '8px', whiteSpace: 'nowrap', textAlign: 'center', width: '100%', display: 'block', alignItems: 'center', alignSelf: 'center' }}>
