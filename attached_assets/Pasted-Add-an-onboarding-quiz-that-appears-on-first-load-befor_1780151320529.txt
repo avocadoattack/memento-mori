@@ -1,0 +1,103 @@
+Add an onboarding quiz that appears on first load, before the main app.
+This is a new feature. Do not change any existing calculation logic.
+
+---
+
+OVERVIEW
+
+On page load (or refresh), instead of showing the main app directly, show a focused
+full-screen quiz. After the user submits, transition to the main app with their values
+pre-applied. If they've already completed the quiz in this session (sessionStorage flag),
+skip straight to the main app.
+
+---
+
+QUIZ SCREEN DESIGN
+
+Full viewport. Same background color as the main app (light/dark theme applies here too).
+Centered content column, max-width 540px.
+
+Top: "MEMENTO MORI" title (same font/size as hero — clamp(64px, 10vw, 120px))
+Below: "Remember death" subtitle (same italic style as hero)
+Below (small, 60% opacity, 14px): "Let's calculate how much of your life is truly yours."
+
+Then three required fields and one button:
+
+FIELD 1 — AGE
+  Label: "How old are you?"
+  Large centered number input, font-size 48px, bold, min 1 max 99
+  Stepper: tap anywhere on field → keyboard on mobile, or use arrow keys
+  Default: empty (required)
+
+FIELD 2 — GENDER
+  Label: "Gender"
+  Two large pill toggle buttons side by side: "Male" / "Female"
+  Required — one must be selected (no default pre-selected)
+
+FIELD 3 — COUNTRY
+  Label: "Where do you live?"
+  Same searchable country dropdown as in the main Parameters panel
+  Pre-filled via the same timezone-detection logic already implemented
+  User can change it
+
+CALCULATE BUTTON
+  Large, full-width, bold: "CALCULATE MY TIME"
+  Accent color background (#E63946 light / #FF4D5E dark), white text
+  Disabled + grayed out until Age and Sex are both provided
+  On click: validate inputs, set sessionStorage flag 'quiz_completed' = 'true',
+  then transition to the main app
+
+TRANSITION: fade out quiz (opacity 0 over 0.4s), fade in main app (opacity 0→1 over 0.5s).
+No page reload — conditional render in React.
+
+---
+
+ADVANCED SETTINGS TOGGLE (inside quiz, below the three fields)
+
+A collapsible section triggered by a small text button:
+  Text: "⚙ Advanced settings" (muted, 13px, 60% opacity)
+  On click: expand/collapse with a smooth CSS height transition (0.3s ease)
+
+When expanded, show all remaining sliders in a compact form using the existing StepperSlider
+components (same as Parameters panel) — grouped the same way (Sleep, Work, Education, etc.)
+
+Above the advanced sliders, show this explanatory text (14px, 70% opacity, italic):
+  "These defaults are drawn from real research data — BLS American Time Use Survey, Gallup 2024,
+  DemandSage 2026, and UN WPP 2024. They represent population averages for your age and country.
+  Override any value if your life differs significantly from the average."
+
+When the quiz is submitted, all advanced setting values (whether default or overridden)
+carry into the main app as the initial parameter state.
+
+---
+
+"ALREADY KNOW WHAT I'M DOING" LINK
+
+Small text link at the bottom of the quiz screen (13px, 50% opacity):
+  "Skip to app →"
+On click: skip quiz, go straight to main app with all defaults applied (no sessionStorage flag set,
+so quiz will show again on next page load/refresh).
+
+---
+
+RETURNING USER BEHAVIOR
+
+On page load, check sessionStorage.getItem('quiz_completed').
+If it equals 'true': skip quiz, render main app directly.
+If null or missing: show quiz.
+
+This means the quiz shows once per browser session (tab). Refreshing shows it again.
+Opening in a new tab shows it again.
+
+---
+
+PRESERVE ALL EXISTING FUNCTIONALITY
+
+The main app (Parameters panel, sliders, grid, stats) must still be fully editable after
+the quiz. The quiz only sets initial values — it doesn't lock anything.
+
+---
+
+Output: ✅ Quiz screen built, ✅ Transition implemented, ✅ Advanced settings toggle,
+✅ Session persistence.
+List all files created and modified.
