@@ -19,7 +19,7 @@ interface DecadeLabel {
 
 export function LifeGrid({ state, lifeExpectancy }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [tooltipData, setTooltipData] = useState<{ x: number; y: number; week: number; age: number; category: string; hours: number; isPast: boolean } | null>(null);
+  const [tooltipData, setTooltipData] = useState<{ x: number; y: number; weekIndex: number; totalSquares: number; isPast: boolean; isCurrent: boolean } | null>(null);
   const [emojiPositions, setEmojiPositions] = useState<EmojiPositions | null>(null);
   const [decadeLabels, setDecadeLabels] = useState<DecadeLabel[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -98,7 +98,6 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
 
     const accent      = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#E63946';
     const isDark      = document.documentElement.classList.contains('dark');
-    const pastColor   = isDark ? '#555555' : '#AAAAAA';
     const futureColor = isDark ? '#2A2A2A' : '#D4CCBD';
 
     const DECADE_GAP = 4;
@@ -132,8 +131,20 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       if (!sq) return;
       const { x, y } = posOf(idx);
       ctx.globalAlpha = 1;
-      ctx.fillStyle = sq.isPast ? pastColor : futureColor;
+      ctx.fillStyle = futureColor;
       ctx.fillRect(x, y, sqSize, sqSize);
+      if (sq.isPast) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(210, 40, 40, 0.55)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x + 2, y + 2);
+        ctx.lineTo(x + sqSize - 2, y + sqSize - 2);
+        ctx.moveTo(x + sqSize - 2, y + 2);
+        ctx.lineTo(x + 2, y + sqSize - 2);
+        ctx.stroke();
+        ctx.restore();
+      }
     };
 
     const drawAllStatic = () => {
@@ -202,13 +213,18 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
 
       drawAllStatic();
 
-      // Fix 1: compute decade label positions (wrapper-relative y, using accurate getRowY)
+      // Fix 7: decade labels centered vertically within each decade group
       const labels: DecadeLabel[] = [];
+      const rowsPerDecade = 520 / cols;
       for (let d = 10; d <= 80; d += 10) {
         const weekIdx = d * 52;
         if (weekIdx >= totalWeeks) break;
-        const row = Math.floor(weekIdx / cols);
-        labels.push({ decade: d, y: Math.round(getRowY(row)) + Math.round(sqSize / 2) });
+        const firstRow = (d * 52) / cols;
+        const midRow = firstRow + rowsPerDecade / 2;
+        const floorMidRow = Math.floor(midRow);
+        const frac = midRow - floorMidRow;
+        const pixelY = Math.round(getRowY(floorMidRow) + frac * totalSqWidth);
+        labels.push({ decade: d, y: pixelY });
       }
       setDecadeLabels(labels);
 
@@ -254,13 +270,12 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       const index = hoveredRow * cols + col;
       if (index >= 0 && index < totalWeeks) {
         setTooltipData({
-          x:        e.clientX,
-          y:        e.clientY,
-          week:     index + 1,
-          age:      squares[index].age,
-          category: squares[index].category,
-          hours:    squares[index].hours,
-          isPast:   squares[index].isPast,
+          x:            e.clientX,
+          y:            e.clientY,
+          weekIndex:    index,
+          totalSquares: totalWeeks,
+          isPast:       index < currentWeek,
+          isCurrent:    index === currentWeek,
         });
       } else {
         setTooltipData(null);
@@ -303,26 +318,13 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
         Each square = 1 week of your life
       </div>
 
-      {/* Wrapper: left 40px column for HTML decade labels, baby emoji, canvas to the right */}
-      <div style={{ position: 'relative', paddingLeft: LABEL_COL_WIDTH }}>
+      {/* Wrapper: left 40px column for HTML decade labels, canvas to the right */}
+      <div style={{ position: 'relative', paddingLeft: LABEL_COL_WIDTH, display: 'block', marginLeft: 'auto', marginRight: 'auto', width: 'fit-content' }}>
 
         {/* Fix 1: decade labels as HTML — crisp on all DPR screens */}
         {decadeLabels.map(({ decade, y }) => (
           <span key={decade} style={{ ...labelStyle, top: y, transform: 'translateY(-50%)' }}>{decade}</span>
         ))}
-
-        {/* Fix 2: baby emoji to the LEFT of first square (in label column) */}
-        {emojiPositions && (
-          <span style={{
-            position: 'absolute',
-            left: 16,
-            top: emojiPositions.babyY,
-            fontSize: '14px',
-            lineHeight: 1,
-            pointerEvents: 'none',
-            userSelect: 'none',
-          }}>👶</span>
-        )}
 
         <canvas ref={canvasRef} className="block cursor-crosshair" />
 
@@ -356,14 +358,15 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
             borderRadius: '6px',
           }}
         >
-          {tooltipData.isPast ? (
-            <div className="font-bold">Week {tooltipData.week} · Age {Math.floor(tooltipData.age)} · Already lived</div>
-          ) : (
-            <>
-              <div className="font-bold">{tooltipData.category}</div>
-              <div className="opacity-80">Part of {Math.round(tooltipData.hours).toLocaleString()} lifetime hours</div>
-            </>
-          )}
+          <div style={{ fontSize: '11px', opacity: 0.7 }}>Week {tooltipData.weekIndex + 1} of {tooltipData.totalSquares}</div>
+          <div className="font-bold mt-0.5">
+            {tooltipData.isCurrent
+              ? 'This is your week — right now'
+              : tooltipData.isPast
+                ? `${(tooltipData.weekIndex / tooltipData.totalSquares * 100).toFixed(1)}% of your life — already lived`
+                : `${(tooltipData.weekIndex / tooltipData.totalSquares * 100).toFixed(1)}% of your life — yet to live`
+            }
+          </div>
         </div>
       )}
 

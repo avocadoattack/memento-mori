@@ -1,0 +1,169 @@
+Targeted UI and display fixes only. Do not change any calculation logic or add features.
+
+---
+
+FIX 1 — QUIZ TITLE: "MEMENTO MORI" ON ONE LINE
+
+In Quiz.tsx, the title currently wraps to two lines ("MEMENTO" / "MORI").
+Fix: set white-space: nowrap and reduce font size until it fits on one line at all widths.
+Use: clamp(48px, 8vw, 96px) — this keeps it large but prevents wrapping on any screen ≥ 320px wide.
+Keep the same font weight and style.
+
+---
+
+FIX 2 — SUBTITLE SPACING: REDUCE GAP BELOW TITLE (BOTH QUIZ AND MAIN APP)
+
+In both Quiz.tsx and Home.tsx:
+Find the margin/gap between the main title and the "Remember death" subtitle.
+Reduce it by ~50% — the subtitle should feel like it belongs directly under the title,
+not floating away from it. Target gap: 8–12px between title baseline and subtitle top.
+Do not change any other vertical spacing.
+
+---
+
+FIX 3 — HERO: SHIFT CONTENT UP, MORE SPACE ABOVE CHEVRON
+
+In Home.tsx, the hero section content is vertically centered with justify-content: center.
+Change to: justify-content: flex-start with padding-top: clamp(48px, 8vh, 80px).
+This pushes the title/countdown/cards upward, creating natural breathing room between
+the cards and the chevron at the bottom of the viewport.
+The chevron stays at position: absolute, bottom: 32px — no change there.
+
+---
+
+FIX 4 — LIFE GRID: CENTER ON PAGE
+
+In the component wrapping the canvas (LifeGrid.tsx or its parent in Home.tsx):
+Ensure the canvas wrapper div has:
+  display: block
+  margin: 0 auto
+  width: fit-content (or max-width: 100%; width: 100%)
+
+Also verify the outer section container has no left/right padding or offset causing misalignment.
+The decade label <span> elements are positioned relative to the canvas wrapper — they should
+move with it automatically once the wrapper is centered.
+
+---
+
+FIX 5 — LIFE GRID: SAME COLOR FOR ALL SQUARES + RED X ON PAST WEEKS
+
+Change the canvas square rendering so ALL squares (past and future) use the same fill color:
+  Light mode: #D4CCBD (the current future-week color)
+  Dark mode: #2A2A2A (the current future-week color in dark)
+
+For past weeks (index < currentAgeInWeeks), after filling the square, draw a small red X:
+  ctx.save();
+  ctx.strokeStyle = 'rgba(210, 40, 40, 0.55)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x + 2, y + 2);
+  ctx.lineTo(x + SQUARE_SIZE - 2, y + SQUARE_SIZE - 2);
+  ctx.moveTo(x + SQUARE_SIZE - 2, y + 2);
+  ctx.lineTo(x + 2, y + SQUARE_SIZE - 2);
+  ctx.stroke();
+  ctx.restore();
+
+Current week (index === currentAgeInWeeks): fill same color as future, draw 1px accent border,
+keep the pulse animation. No X mark.
+
+---
+
+FIX 6 — LIFE GRID TOOLTIP: SHOW % OF LIFE LIVED
+
+Update the canvas mousemove tooltip handler in LifeGrid.tsx.
+
+For ALL squares (past and future), the tooltip should show:
+
+  Past weeks:
+    "Week [N] of [totalSquares]"
+    "[X.X]% of your life — already lived"
+
+  Current week:
+    "Week [N] of [totalSquares]"
+    "This is your week — right now"
+
+  Future weeks:
+    "Week [N] of [totalSquares]"
+    "[X.X]% of your life — yet to live"
+
+Where X.X = (weekIndex / totalSquares * 100).toFixed(1)
+
+Remove all references to categories, activities, or "Dominated by" from the tooltip.
+Remove the "Part of X,XXX lifetime hours" line entirely.
+
+---
+
+FIX 7 — DECADE LABELS: REMOVE BABY EMOJI, CENTER LABELS VERTICALLY IN EACH GROUP
+
+Remove the baby emoji (👶) from the left of the first row entirely — both the HTML overlay
+span and any canvas draw call. The space it occupied can be absorbed into normal padding.
+
+Keep the coffin emoji (⚰️) at the end of the last row — no change.
+
+For each decade label (10, 20, 30...):
+  rowsPerDecade = 520 / colCount  (integer — this is already guaranteed by Fix 2 from last batch)
+  The label for decade D should be centered vertically across all rows in that decade group:
+    firstRowOfDecade = (D * 52) / colCount  — the row index where decade D starts
+    midRowOfDecade = firstRowOfDecade + (rowsPerDecade / 2)
+    pixelY = Math.round(midRowOfDecade * (SQUARE_SIZE + GAP))
+  
+  Set each span's top to pixelY + 'px' and transform: 'translateY(-50%)'
+  This centers the number exactly between the first and last row of its decade group.
+  All spans share the same left: -36px for a consistent column.
+
+---
+
+FIX 8 — STATS CARDS: CLARIFY "YEARS" IS CUMULATIVE LIFETIME
+
+For every stat card that now shows years (Sleeping, Working, Eating & Cooking, Grooming,
+Chores, Commuting, Social Media, Passive TV, Streaming):
+
+Change the card sublabel from just the category name to:
+  "[Category] — cumulative lifetime"
+  Example: "Sleeping — cumulative lifetime", "Working — cumulative lifetime"
+
+For the "In School" card, the sublabel should read:
+  "In School — [N] calendar years"
+  (where N = sum of active education level years)
+
+For Free Years, Free Days, Free Saturdays — no change.
+
+---
+
+FIX 9 — REMOVE "DATA-BACKED DEFAULTS" BOX FROM PARAMETERS
+
+In ControlsPanel.tsx, find the callout/card/box that displays the "Data-backed Defaults"
+explanatory text (the pink/highlighted box at the top of the Parameters panel).
+Delete it entirely — remove the JSX element and any associated state or styling.
+Do not replace it with anything. The Parameters panel should start directly with
+"YOUR PROFILE" section header.
+
+---
+
+FIX 10 — COUNTDOWN: PREVENT LAYOUT JITTER ON SECONDS TICK
+
+The countdown shifts horizontally because digit widths vary (e.g. "7" is narrower than "13").
+
+Fix by giving each numeric value in the countdown a fixed minimum width:
+
+For each countdown unit (years, months, weeks, days, hours, mins, secs):
+  Wrap the number in a <span> with:
+    display: inline-block
+    min-width: 2ch        /* 2 characters wide minimum — handles 0–99 */
+    text-align: center
+    font-variant-numeric: tabular-nums
+    font-feature-settings: "tnum" 1
+
+Also add to the countdown container:
+    font-variant-numeric: tabular-nums
+
+For the seconds unit specifically (which changes every second and is the jitter source),
+add: min-width: 2.2ch to absorb any remaining sub-pixel width difference between digits.
+
+This ensures the total countdown width stays constant regardless of which digits are showing,
+eliminating the side-to-side movement.
+
+---
+
+Output: ✅ Fix 1 through ✅ Fix 10, one line each.
+List all files modified. Do not change anything else.

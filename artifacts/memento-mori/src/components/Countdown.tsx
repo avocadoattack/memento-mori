@@ -103,11 +103,22 @@ export function Countdown({ currentAge, lifeExpectancy, freeHoursRemaining }: Pr
     <div className="flex flex-col items-center gap-12 my-12 w-full max-w-4xl mx-auto">
       <div className="text-center">
         <h3 className="text-xs font-bold uppercase tracking-widest opacity-60 mb-6">Countdown to Expected Death</h3>
-        <div className="flex flex-wrap justify-center items-end text-[var(--accent)] font-mono font-bold tracking-tighter" style={{ fontSize: 'clamp(40px, 6vw, 72px)' }}>
+        <div className="flex flex-wrap justify-center items-end text-[var(--accent)] font-mono font-bold tracking-tighter" style={{ fontSize: 'clamp(40px, 6vw, 72px)', fontVariantNumeric: 'tabular-nums' }}>
           {units.map((u, i) => (
             <React.Fragment key={u.key}>
               <div className="flex flex-col items-center px-3 sm:px-5 md:px-7">
-                <span className="leading-none">{u.value}</span>
+                <span
+                  className="leading-none"
+                  style={{
+                    display: 'inline-block',
+                    minWidth: u.key === 'secs' ? '2.2ch' : '2ch',
+                    textAlign: 'center',
+                    fontVariantNumeric: 'tabular-nums',
+                    fontFeatureSettings: '"tnum" 1',
+                  }}
+                >
+                  {u.value}
+                </span>
                 <span
                   className="font-sans font-medium uppercase mt-2 text-foreground opacity-50"
                   style={{ fontSize: '13px', letterSpacing: '0.15em' }}

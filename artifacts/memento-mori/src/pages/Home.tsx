@@ -84,15 +84,16 @@ export default function Home() {
 
       {/* Hero Section — full viewport height, content vertically centered */}
       <div
-        className="px-4 w-full max-w-[1200px] mx-auto flex flex-col justify-center"
+        className="px-4 w-full max-w-[1200px] mx-auto flex flex-col justify-start"
         style={{
           height: 'calc(var(--dvh, 1dvh) * 100)',
           minHeight: '-webkit-fill-available',
           position: 'relative',
+          paddingTop: 'clamp(48px, 8vh, 80px)',
         }}
       >
         <div className="text-center" style={{ marginBottom: '56px' }}>
-          <h1 className="font-bold font-mono tracking-tighter" style={{ fontSize: 'clamp(64px, 10vw, 120px)', marginBottom: '16px' }}>
+          <h1 className="font-bold font-mono tracking-tighter" style={{ fontSize: 'clamp(64px, 10vw, 120px)', marginBottom: '8px' }}>
             MEMENTO MORI
           </h1>
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 'clamp(28px, 4vw, 48px)', opacity: 0.85 }}>

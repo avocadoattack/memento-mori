@@ -67,7 +67,7 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
       <div className="w-full max-w-[540px] flex flex-col">
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="font-bold font-mono tracking-tighter" style={{ fontSize: 'clamp(64px, 10vw, 120px)', marginBottom: '12px' }}>
+          <h1 className="font-bold font-mono tracking-tighter" style={{ fontSize: 'clamp(48px, 8vw, 96px)', marginBottom: '8px', whiteSpace: 'nowrap' }}>
             MEMENTO MORI
           </h1>
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 'clamp(24px, 3.5vw, 40px)', opacity: 0.85 }}>

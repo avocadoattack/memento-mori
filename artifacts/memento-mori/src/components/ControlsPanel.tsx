@@ -57,11 +57,6 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
       <div className="overflow-y-auto pr-2 -mr-2">
         <h2 className="text-xl font-bold font-mono tracking-tight mb-4">PARAMETERS</h2>
 
-        <div className="bg-accent/10 border border-accent/20 p-3 rounded text-sm text-foreground/80 mb-6">
-          <p className="font-medium mb-1">Data-backed Defaults</p>
-          <p className="opacity-80 text-xs">All defaults are drawn from real research data — BLS American Time Use Survey, Gallup 2024, DemandSage 2026, UN WPP 2024. Adjust any value to model your own life. Changed values are highlighted.</p>
-        </div>
-
         <SectionTitle icon={User}>Your Profile</SectionTitle>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
