@@ -66,11 +66,11 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
     >
       <div className="w-full max-w-[540px] flex flex-col">
         {/* Header */}
-        <div className="text-center mb-10">
-          <h1 className="font-bold font-mono tracking-tighter" style={{ fontSize: 'clamp(48px, 8vw, 96px)', marginBottom: '8px', whiteSpace: 'nowrap' }}>
+        <div className="text-center mb-10" style={{ width: '100%', textAlign: 'center', alignItems: 'center' }}>
+          <h1 className="font-bold font-mono tracking-tighter" style={{ fontSize: 'clamp(48px, 8vw, 96px)', marginBottom: '8px', whiteSpace: 'nowrap', textAlign: 'center', width: '100%', display: 'block', alignItems: 'center', alignSelf: 'center' }}>
             MEMENTO MORI
           </h1>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 'clamp(24px, 3.5vw, 40px)', opacity: 0.85 }}>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 'clamp(24px, 3.5vw, 40px)', opacity: 0.85, textAlign: 'center', width: '100%', display: 'block', alignItems: 'center', alignSelf: 'center' }}>
             Remember death
           </p>
           <p style={{ fontSize: '14px', opacity: 0.6, marginTop: '12px' }}>
