@@ -1,0 +1,30 @@
+Redesign Quiz.tsx — the onboarding quiz screen. The current version looks spartan and has inconsistent element sizing. Fix all of the following:
+Layout & Spacing
+
+Compress the vertical rhythm. The current gaps between sections (title → age → gender → country → advanced settings) are too large — it feels like a half-empty form floating in space. Tighten the spacing so the form feels cohesive and intentional, not abandoned.
+The whole form should feel centered and dense in the viewport — vertically centered with min-h-screen, using flex flex-col items-center justify-center.
+Add a subtle max-width container (around 480px) so the form doesn't feel adrift on wide screens.
+
+Age Input
+
+The current age display ("00" with tiny up/down arrows beside it) is clunky. Redesign it as a cleaner large numeral display — keep the StepperSlider logic (no <input type="range">) but make the number feel typographically intentional. The value should display large (use Space Grotesk, ~80–96px, bold). The +/− controls should be clearly tap/click targets, placed below the number, evenly spaced, visually balanced.
+
+Gender Toggle
+
+The MALE / FEMALE buttons are inconsistent in width — FEMALE is wider because it has more characters. Fix both buttons to be the same fixed width (e.g. w-32 or min-w-[120px]), centered text, equal padding. They should look like a proper toggle pair, not two random buttons.
+Selected state: filled background with contrasting text (use the existing CSS variable for accent or a dark fill). Unselected: bordered, transparent background.
+
+Country Dropdown
+
+Give it consistent sizing with the rest of the form — same width as the gender toggle group or slightly wider. Make sure it's visually harmonious, not just a default browser select element.
+
+Typography & Hierarchy
+
+The section labels (HOW OLD ARE YOU?, GENDER, WHERE DO YOU LIVE?) should feel deliberate — keep the spaced uppercase tracking style, but reduce the gap between each label and its input.
+Subtitle "Let's calculate how much of your life is truly yours." — if it's there, style it more intentionally or remove it; right now it reads as an afterthought.
+
+"Calculate My Time" Button
+
+If not already visible, make sure the CTA button is always in view (doesn't require scrolling on a standard 900px+ screen). Full-width within the form container, bold, high contrast.
+
+Preserve all existing logic — don't change any state, props, session behavior, geolocation, transitions, or the "Skip to app →" link. This is a visual/layout-only change.
