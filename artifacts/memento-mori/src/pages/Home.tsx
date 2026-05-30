@@ -11,14 +11,17 @@ import { EDUCATION_LEVELS } from '../lib/educationLevels';
 export default function Home() {
   const { state, lifeExpectancy, stats } = useLifeCalc();
 
-  // Fix 4: Set --real-vh to actual visible viewport height (excludes browser chrome)
+  // Fix 4: --dvh tracks actual visible viewport height (excludes browser chrome, Replit banner, etc.)
   useEffect(() => {
-    const setVH = () => {
-      document.documentElement.style.setProperty('--real-vh', `${window.innerHeight * 0.01}px`);
+    const set = () =>
+      document.documentElement.style.setProperty('--dvh', `${window.innerHeight / 100}px`);
+    set();
+    window.addEventListener('resize', set);
+    window.addEventListener('orientationchange', set);
+    return () => {
+      window.removeEventListener('resize', set);
+      window.removeEventListener('orientationchange', set);
     };
-    setVH();
-    window.addEventListener('resize', setVH);
-    return () => window.removeEventListener('resize', setVH);
   }, []);
 
   const schoolCalendarYears = EDUCATION_LEVELS
@@ -34,7 +37,11 @@ export default function Home() {
       {/* Hero Section — full viewport height, content vertically centered */}
       <div
         className="px-4 w-full max-w-[1200px] mx-auto flex flex-col justify-center"
-        style={{ height: 'calc(var(--real-vh, 1vh) * 100)', position: 'relative' }}
+        style={{
+          height: 'calc(var(--dvh, 1dvh) * 100)',
+          minHeight: '-webkit-fill-available',
+          position: 'relative',
+        }}
       >
         <div className="text-center mb-6">
           <h1 className="text-5xl md:text-7xl lg:text-[85px] font-bold font-mono tracking-tighter mb-3">

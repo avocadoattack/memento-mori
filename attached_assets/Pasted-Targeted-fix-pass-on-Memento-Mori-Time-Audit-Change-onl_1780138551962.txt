@@ -1,0 +1,231 @@
+Targeted fix pass on Memento Mori: Time Audit. Change only what is listed. Do not touch calculation logic.
+
+---
+
+FIX 1 — DECADE LABELS: MOVE OFF CANVAS, RENDER AS HTML
+
+ctx.fillText() for the decade labels will never be crisp on high-DPI screens regardless of font settings.
+Replace canvas-drawn decade labels with absolutely positioned HTML <span> elements overlaid on the canvas,
+using the same wrapper div (position: relative) already used for the emoji overlays.
+
+Implementation:
+- Remove ALL ctx.fillText() calls for decade labels from the canvas draw function
+- Also remove the 24px left-padding offset that was added to the canvas draw area for label space —
+  the canvas should now use the full available width for squares
+- In the React render, compute label positions in JavaScript:
+  - For each decade (10, 20, 30, 40, 50, 60, 70, 80...):
+    - decadeRow = (decade * 52) / colCount  — the row index where this decade starts
+    - pixelY = Math.round(decadeRow * (SQUARE_SIZE + GAP))
+    - Render a <span> positioned: absolute, left: -32px, top: pixelY + 'px'
+    - Text: the decade number as a string
+    - Style: font-size 11px, font-weight 700, font-family: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      color: currentTheme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)',
+      line-height: 1, user-select: none
+- Add left: 40px margin/padding to the canvas wrapper div to create space for the labels
+- The <span> elements will be native HTML text — guaranteed pixel-perfect on all DPR screens
+
+---
+
+FIX 2 — BABY EMOJI: MOVE TO LEFT OF FIRST SQUARE, NOT ON TOP
+
+The baby emoji is currently overlapping the first square.
+Change its position so it sits to the LEFT of the first square with a small gap:
+  left: -24px (relative to canvas left edge, same column as decade labels but at y=0)
+  top: 0px
+  font-size: 14px
+
+This places it in the label column, aligned with the first row, not overlapping any squares.
+
+---
+
+FIX 3 — REPLACE SKULL EMOJI WITH COFFIN
+
+Find the skull/crossbones emoji (☠️ or 💀) used at the end of the grid.
+Replace it with the coffin emoji: ⚰️
+No other changes to its position or sizing.
+
+---
+
+FIX 4 — CHEVRON: USE 100dvh + INNER HEIGHT FALLBACK
+
+The previous --real-vh fix is not reliable in all Replit/browser environments.
+Replace the entire hero height implementation with this three-layer approach:
+
+In the hero section element:
+```css
+height: 100dvh;           /* Modern browsers — dynamic viewport, excludes browser chrome */
+height: 100svh;           /* Fallback 1 — small viewport height */
+height: 100vh;            /* Fallback 2 — widest compatibility */
+```
+
+Use a CSS-in-JS or inline style approach that applies them in priority order. In React:
+```tsx
+// Inline style override that uses dvh if supported, else falls back:
+const heroStyle = {
+  height: 'calc(var(--dvh, 1dvh) * 100)',
+  minHeight: '-webkit-fill-available',
+};
+
+useEffect(() => {
+  // Set dvh custom property using actual innerHeight
+  const set = () =>
+    document.documentElement.style.setProperty('--dvh', `${window.innerHeight / 100}px`);
+  set();
+  window.addEventListener('resize', set);
+  window.addEventListener('orientationchange', set);
+  return () => {
+    window.removeEventListener('resize', set);
+    window.removeEventListener('orientationchange', set);
+  };
+}, []);
+```
+
+Remove all previous --real-vh code. This single approach handles Replit's dev banner,
+MacBook notch, Safari iOS toolbar, and all other dynamic chrome situations.
+
+---
+
+FIX 5 — COUNTRY AUTO-DETECTION: TIMEZONE LOOKUP (NO API REQUIRED)
+
+The current IP detection is not working reliably. Replace it with a two-step approach:
+
+STEP 1 — Try ipapi.co with a 2-second timeout:
+```ts
+const controller = new AbortController();
+const timeout = setTimeout(() => controller.abort(), 2000);
+fetch('https://ipapi.co/json/', { signal: controller.signal })
+  .then(r => r.json())
+  .then(data => {
+    clearTimeout(timeout);
+    if (data.country_name && lifeExpectancy[data.country_name]) {
+      setCountry(data.country_name);
+    } else {
+      detectByTimezone();
+    }
+  })
+  .catch(() => detectByTimezone());
+```
+
+STEP 2 — Timezone-to-country fallback (no API, instant, works offline):
+```ts
+const detectByTimezone = () => {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const tzCountryMap: Record<string, string> = {
+    'Europe/Madrid': 'Spain', 'Europe/Barcelona': 'Spain',
+    'America/New_York': 'United States', 'America/Chicago': 'United States',
+    'America/Denver': 'United States', 'America/Los_Angeles': 'United States',
+    'America/Phoenix': 'United States', 'America/Anchorage': 'United States',
+    'Pacific/Honolulu': 'United States',
+    'America/Toronto': 'Canada', 'America/Vancouver': 'Canada', 'America/Montreal': 'Canada',
+    'Europe/London': 'United Kingdom',
+    'Europe/Paris': 'France',
+    'Europe/Berlin': 'Germany', 'Europe/Vienna': 'Austria',
+    'Europe/Rome': 'Italy',
+    'Europe/Amsterdam': 'Netherlands',
+    'Europe/Brussels': 'Belgium',
+    'Europe/Lisbon': 'Portugal',
+    'Europe/Athens': 'Greece',
+    'Europe/Warsaw': 'Poland',
+    'Europe/Stockholm': 'Sweden',
+    'Europe/Oslo': 'Norway',
+    'Europe/Copenhagen': 'Denmark',
+    'Europe/Helsinki': 'Finland',
+    'Europe/Zurich': 'Switzerland',
+    'Europe/Dublin': 'Ireland',
+    'Europe/Bucharest': 'Romania',
+    'Europe/Prague': 'Czech Republic',
+    'Europe/Moscow': 'Russia', 'Europe/Kaliningrad': 'Russia',
+    'Europe/Kiev': 'Ukraine',
+    'Asia/Tokyo': 'Japan',
+    'Asia/Seoul': 'South Korea',
+    'Asia/Singapore': 'Singapore',
+    'Asia/Shanghai': 'China', 'Asia/Hong_Kong': 'China',
+    'Asia/Kolkata': 'India',
+    'Asia/Bangkok': 'Thailand',
+    'Asia/Jakarta': 'Indonesia',
+    'Asia/Manila': 'Philippines',
+    'Asia/Ho_Chi_Minh': 'Vietnam',
+    'Asia/Karachi': 'Pakistan',
+    'Asia/Dhaka': 'Bangladesh',
+    'Asia/Dubai': 'UAE',
+    'Asia/Riyadh': 'Saudi Arabia',
+    'Asia/Tehran': 'Iran',
+    'Asia/Istanbul': 'Turkey',
+    'Asia/Jerusalem': 'Israel',
+    'Australia/Sydney': 'Australia', 'Australia/Melbourne': 'Australia',
+    'Pacific/Auckland': 'New Zealand',
+    'America/Sao_Paulo': 'Brazil', 'America/Manaus': 'Brazil',
+    'America/Argentina/Buenos_Aires': 'Argentina',
+    'America/Santiago': 'Chile',
+    'America/Bogota': 'Colombia',
+    'America/Mexico_City': 'Mexico', 'America/Monterrey': 'Mexico',
+    'America/Costa_Rica': 'Costa Rica',
+    'America/Havana': 'Cuba',
+    'Africa/Cairo': 'Egypt',
+    'Africa/Casablanca': 'Morocco',
+    'Africa/Johannesburg': 'South Africa',
+    'Africa/Nairobi': 'Kenya',
+    'Africa/Addis_Ababa': 'Ethiopia',
+    'Africa/Lagos': 'Nigeria',
+  };
+  const detected = tzCountryMap[tz];
+  setCountry(detected && lifeExpectancy[detected] ? detected : 'World Average');
+};
+```
+
+---
+
+FIX 6 — LIFE EXPECTANCY VALUE COLOR: RED → GREEN
+
+In ControlsPanel.tsx (or wherever the Life Expectancy read-only field displays its number),
+find the color/className applied to the displayed value (currently red/accent color).
+Change it to green: #2D9E5F in light mode, #3EBD74 in dark mode.
+Apply only to the numeric value in the Life Expectancy field — not to any other field.
+
+---
+
+FIX 7 — NEW COLOR PALETTE (11 CATEGORIES)
+
+Replace the entire category color palette using the provided Coolors 10-color base:
+#ff0000, #ff8700, #ffd300, #deff0a, #a1ff0a, #0aff99, #0aefff, #147df5, #580aff, #be0aff
+
+TV and Streaming share the purple family (both already in the palette) — distinguishable but clearly related.
+
+Apply this exact mapping everywhere colors are referenced (CSS variables in index.css,
+LifeGrid.tsx color array, StatsPanel.tsx card accents, StepperSlider progress bars,
+the Where Your Life Goes bar, the color legend):
+
+  Sleep:        #147df5   (blue — intuitive for sleep)
+  Work:         #ff0000   (red — intensity, obligation)
+  School:       #ffd300   (yellow — learning, energy)
+  Eating:       #0aff99   (mint green — nourishment)
+  Grooming:     #deff0a   (bright yellow-green — distinct from eating)
+  Chores:       #a1ff0a   (lime green)
+  Commute:      #ff8700   (orange — movement, transition)
+  Social Media: #be0aff   (magenta-purple — digital addiction)
+  TV:           #580aff   (deep blue-purple)
+  Streaming:    #8B50FF   (lighter purple — same hue as TV, derived tone, NOT in original palette)
+  Free Time:    #0aefff   (cyan — open, free, sky)
+
+Search the entire codebase for ALL old hex color values and replace them.
+The old values to find and replace:
+  #3A86FF → #147df5
+  #FF006E → #ff0000
+  #FFBE0B → #ffd300
+  #06D6A0 → #0aff99
+  #8338EC or #C77DFF → #deff0a
+  #4CC9F0 → #a1ff0a
+  #FB5607 → #ff8700
+  #F72585 → #be0aff
+  #9B5DE5 → #580aff
+  #0096C7 or #7B2D8B → #8B50FF
+  #00F5D4 → #0aefff
+
+Note: #deff0a and #a1ff0a may appear faint on the light theme background (#F5F0E8).
+Add opacity: 0.9 to the canvas fillStyle when drawing these two colors only, to ensure they
+are visible against both light and dark backgrounds. For the legend and bar, they are fine as-is.
+
+---
+
+Output: ✅ Fix 1 through ✅ Fix 7 — one line each.
+List all files modified. Do not change anything else.

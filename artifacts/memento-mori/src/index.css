@@ -21,18 +21,21 @@
   --card: #FFFFFF;
   --accent: #E63946;
 
-  /* Category colors */
-  --cat-sleep: #3A86FF;
-  --cat-work: #E63946;
-  --cat-school: #FFBE0B;
-  --cat-eating: #06D6A0;
-  --cat-grooming: #C77DFF;
-  --cat-commute: #FB5607;
-  --cat-chores: #4CC9F0;
-  --cat-social: #F72585;
-  --cat-tv: #9B5DE5;
-  --cat-streaming: #0096C7;
-  --cat-free: #00F5D4;
+  /* Category colors — Coolors 10-color base palette */
+  --cat-sleep:    #147df5;
+  --cat-work:     #ff0000;
+  --cat-school:   #ffd300;
+  --cat-eating:   #0aff99;
+  --cat-grooming: #deff0a;
+  --cat-commute:  #ff8700;
+  --cat-chores:   #a1ff0a;
+  --cat-social:   #be0aff;
+  --cat-tv:       #580aff;
+  --cat-streaming:#8B50FF;
+  --cat-free:     #0aefff;
+
+  /* Life expectancy display color (green — distinct from accent) */
+  --life-exp-color: #2D9E5F;
 }
 
 .dark {
@@ -40,6 +43,7 @@
   --foreground: #F0EDE6;
   --card: #1A1A1A;
   --accent: #FF4D5E;
+  --life-exp-color: #3EBD74;
 }
 
 @layer base {

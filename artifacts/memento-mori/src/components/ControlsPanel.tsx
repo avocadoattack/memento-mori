@@ -119,10 +119,11 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
                   value={state.customLifeExp}
                   min={50} max={120} step={0.1}
                   onChange={e => state.setCustomLifeExp(parseFloat(e.target.value) || 50)}
-                  className="w-20 bg-card border border-border px-2 py-1 text-sm font-mono font-bold text-accent text-right focus:outline-none focus:border-accent"
+                  className="w-20 bg-card border border-border px-2 py-1 text-sm font-mono font-bold text-right focus:outline-none focus:border-accent"
+                  style={{ color: 'var(--life-exp-color)' }}
                 />
               ) : (
-                <div className="font-mono font-bold text-lg text-accent">{lifeExpectancy.toFixed(1)}</div>
+                <div className="font-mono font-bold text-lg" style={{ color: 'var(--life-exp-color)' }}>{lifeExpectancy.toFixed(1)}</div>
               )}
               <button
                 onClick={() => {
@@ -156,7 +157,7 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
                 onClick={() => state.toggleEducationLevel(level.id)}
                 className={`flex flex-col items-start px-3 py-2 text-xs font-bold border transition-colors ${
                   isActive
-                    ? 'bg-[#FFBE0B] text-[#1A1A1A] border-[#FFBE0B]'
+                    ? 'bg-[#ffd300] text-[#1A1A1A] border-[#ffd300]'
                     : 'bg-transparent border-border text-foreground/60 hover:border-foreground/40'
                 }`}
               >
