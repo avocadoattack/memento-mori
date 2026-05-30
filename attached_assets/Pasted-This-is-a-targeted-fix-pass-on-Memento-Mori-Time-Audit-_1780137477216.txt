@@ -1,0 +1,137 @@
+This is a targeted fix pass on Memento Mori: Time Audit.
+Do NOT change any calculation logic, grid color allocation logic, or layout structure.
+Fix only the four issues below.
+
+---
+
+FIX 1 — STEPPER BUTTONS RAPID-FIRE GLITCH
+
+The + and − buttons in StepperSlider.tsx fire too fast when held, causing numbers and the grid
+to flicker uncontrollably. The setInterval is firing at 80ms and likely accumulating multiple
+intervals without cleanup.
+
+Rewrite the hold behavior in StepperSlider.tsx:
+
+```tsx
+const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+const timeoutRef  = useRef<ReturnType<typeof setTimeout>  | null>(null);
+
+const stopHold = () => {
+  if (timeoutRef.current)  { clearTimeout(timeoutRef.current);   timeoutRef.current  = null; }
+  if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+};
+
+const startHold = (direction: 1 | -1) => {
+  stopHold(); // always clear any existing timers first
+  applyStep(direction); // fire once immediately on press
+  // After 450ms delay, begin repeating at 180ms — fast enough to feel responsive, slow enough to be controlled
+  timeoutRef.current = setTimeout(() => {
+    intervalRef.current = setInterval(() => applyStep(direction), 180);
+  }, 450);
+};
+
+// applyStep clamps the new value to [min, max] before calling onChange
+const applyStep = (direction: 1 | -1) => {
+  onChange(Math.min(max, Math.max(min, parseFloat((value + direction * step).toFixed(10)))));
+};
+```
+
+Attach:
+- onMouseDown: startHold(direction)
+- onMouseUp + onMouseLeave + onTouchEnd: stopHold
+- useEffect cleanup: return () => stopHold()
+
+This ensures: one click = one step, hold = 450ms pause then repeat at 180ms.
+No interval accumulation is possible.
+
+---
+
+FIX 2 — COLOR PALETTE: DIFFERENTIATE CONFLICTING CATEGORIES
+
+The current palette has two confusion clusters:
+1. Work (#FF006E) and Social Media (#F72585) are nearly identical hot pink/magenta
+2. Grooming (#8338EC), TV (#9B5DE5), and Streaming (#7B2D8B) are three nearly identical purples
+
+Replace these five color values everywhere they appear (index.css CSS variables,
+LifeGrid.tsx, StatsPanel.tsx, and any other hardcoded references):
+
+CHANGES ONLY (leave all other category colors untouched):
+- Work:      #FF006E → #E63946  (clear red — nothing else in the palette is red)
+- Streaming: #7B2D8B → #0096C7  (ocean teal-blue — moves out of purple entirely)
+- Grooming:  #8338EC → #C77DFF  (light lavender — visually lighter than TV's medium purple)
+
+Unchanged categories (confirm these are still correct in all files):
+- Sleep:        #3A86FF
+- School:       #FFBE0B
+- Eating:       #06D6A0
+- Chores:       #4CC9F0
+- Commute:      #FB5607
+- Social Media: #F72585
+- TV:           #9B5DE5
+- Free Time:    #00F5D4
+
+After the change:
+- Work (red) vs Social Media (hot pink): clearly distinct
+- Grooming (light lavender) vs TV (medium purple) vs Streaming (teal-blue): all distinct
+- Streaming (teal-blue) vs Sleep (cornflower blue): different enough in hue and saturation
+
+Apply the new color values to the legend, the canvas grid color array, the stat card left-border
+accents, the StepperSlider progress bars, and the Where Your Life Goes bar. Search for the old
+hex values globally to ensure no instances are missed.
+
+---
+
+FIX 3 — SUBTITLE: REMOVE PERIOD, INCREASE SIZE
+
+In the hero section (Home.tsx or wherever the subtitle renders):
+- Change text from "Remember death." to "Remember death" (remove the period)
+- Increase font size from 28px to 36px
+- Keep all other styles unchanged (Cormorant Garamond italic, opacity 0.85, centered)
+
+---
+
+FIX 4 — SCROLL CHEVRON: VIEWPORT-SAFE POSITIONING
+
+The ChevronDown scroll indicator appears off-screen on smaller laptops (MacBook 16") because
+100vh includes browser chrome on some browsers/devices.
+
+Replace the current positioning with a viewport-safe approach:
+
+```css
+/* In the hero section's wrapper or inline style: */
+min-height: 100svh;  /* svh = small viewport height, excludes browser chrome */
+/* Fallback for browsers that don't support svh: */
+min-height: 100vh;
+
+/* Use CSS custom property for safe cross-browser support: */
+```
+
+In the component:
+
+```tsx
+// Set CSS custom property on mount to capture actual visible height
+useEffect(() => {
+  const setVH = () => {
+    document.documentElement.style.setProperty('--real-vh', `${window.innerHeight * 0.01}px`);
+  };
+  setVH();
+  window.addEventListener('resize', setVH);
+  return () => window.removeEventListener('resize', setVH);
+}, []);
+```
+
+```css
+/* In CSS: */
+.hero-section {
+  height: calc(var(--real-vh, 1vh) * 100);
+}
+```
+
+The ChevronDown button (position: absolute, bottom: 32px) is already correctly positioned
+relative to the hero section — it will now always stay within the visible viewport regardless
+of screen size or browser chrome height.
+
+---
+
+Output: ✅ Fix 1, ✅ Fix 2, ✅ Fix 3, ✅ Fix 4
+List every file modified. Do not change anything else.

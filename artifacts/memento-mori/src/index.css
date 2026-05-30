@@ -23,15 +23,15 @@
 
   /* Category colors */
   --cat-sleep: #3A86FF;
-  --cat-work: #FF006E;
+  --cat-work: #E63946;
   --cat-school: #FFBE0B;
   --cat-eating: #06D6A0;
-  --cat-grooming: #8338EC;
+  --cat-grooming: #C77DFF;
   --cat-commute: #FB5607;
   --cat-chores: #4CC9F0;
   --cat-social: #F72585;
   --cat-tv: #9B5DE5;
-  --cat-streaming: #7B2D8B;
+  --cat-streaming: #0096C7;
   --cat-free: #00F5D4;
 }
 

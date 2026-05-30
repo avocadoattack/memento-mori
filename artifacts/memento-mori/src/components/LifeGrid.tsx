@@ -48,13 +48,13 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
     const totalSquares = totalWeeks;
     const cats = [
       { name: 'Sleep',        color: '#3A86FF', hours: sleepHours },
-      { name: 'Work',         color: '#FF006E', hours: workHours },
+      { name: 'Work',         color: '#E63946', hours: workHours },
       { name: 'Social Media', color: '#F72585', hours: socialMediaHours },
       { name: 'TV',           color: '#9B5DE5', hours: tvHours },
-      { name: 'Streaming',    color: '#7B2D8B', hours: streamingHours },
+      { name: 'Streaming',    color: '#0096C7', hours: streamingHours },
       { name: 'Eating',       color: '#06D6A0', hours: eatingHours },
       { name: 'Chores',       color: '#4CC9F0', hours: choresHours },
-      { name: 'Grooming',     color: '#8338EC', hours: groomingHours },
+      { name: 'Grooming',     color: '#C77DFF', hours: groomingHours },
       { name: 'Commute',      color: '#FB5607', hours: commuteHours },
       { name: 'School',       color: '#FFBE0B', hours: schoolHours },
     ];
@@ -359,15 +359,15 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
 
       <div className="flex flex-wrap justify-center gap-4 mt-6 text-xs font-bold uppercase tracking-widest opacity-80">
         <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#3A86FF]"></span> Sleep</div>
-        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#FF006E]"></span> Work</div>
+        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#E63946]"></span> Work</div>
         <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#FFBE0B]"></span> School</div>
         <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#06D6A0]"></span> Eating</div>
-        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#8338EC]"></span> Grooming</div>
+        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#C77DFF]"></span> Grooming</div>
         <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#4CC9F0]"></span> Chores</div>
         <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#FB5607]"></span> Commute</div>
         <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#F72585]"></span> Social Media</div>
         <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#9B5DE5]"></span> TV</div>
-        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#7B2D8B]"></span> Streaming</div>
+        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#0096C7]"></span> Streaming</div>
         <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block bg-[#00F5D4]"></span> Free Time</div>
       </div>
     </div>

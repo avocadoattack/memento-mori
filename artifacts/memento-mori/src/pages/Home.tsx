@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useLifeCalc } from '../hooks/useLifeCalc';
 import { ThemeToggle } from '../components/ThemeToggle';
@@ -10,6 +10,16 @@ import { EDUCATION_LEVELS } from '../lib/educationLevels';
 
 export default function Home() {
   const { state, lifeExpectancy, stats } = useLifeCalc();
+
+  // Fix 4: Set --real-vh to actual visible viewport height (excludes browser chrome)
+  useEffect(() => {
+    const setVH = () => {
+      document.documentElement.style.setProperty('--real-vh', `${window.innerHeight * 0.01}px`);
+    };
+    setVH();
+    window.addEventListener('resize', setVH);
+    return () => window.removeEventListener('resize', setVH);
+  }, []);
 
   const schoolCalendarYears = EDUCATION_LEVELS
     .filter(l => state.selectedEducationLevels.includes(l.id))
@@ -24,14 +34,14 @@ export default function Home() {
       {/* Hero Section — full viewport height, content vertically centered */}
       <div
         className="px-4 w-full max-w-[1200px] mx-auto flex flex-col justify-center"
-        style={{ height: '100vh', position: 'relative' }}
+        style={{ height: 'calc(var(--real-vh, 1vh) * 100)', position: 'relative' }}
       >
         <div className="text-center mb-6">
           <h1 className="text-5xl md:text-7xl lg:text-[85px] font-bold font-mono tracking-tighter mb-3">
             MEMENTO MORI
           </h1>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '28px', opacity: 0.85 }}>
-            Remember death.
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '36px', opacity: 0.85 }}>
+            Remember death
           </p>
         </div>
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Info } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -24,24 +24,35 @@ export function StepperSlider({
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeoutRef  = useRef<ReturnType<typeof setTimeout>  | null>(null);
 
   const pct = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
 
   const fmt = (v: number) => v < 10 && step < 1 ? v.toFixed(1) : String(Math.round(v));
 
   const clamp = (v: number) => Math.min(max, Math.max(min, v));
-  const snap = (v: number) => parseFloat((Math.round(v / step) * step).toFixed(10));
+  const snap  = (v: number) => parseFloat((Math.round(v / step) * step).toFixed(10));
 
-  const inc = useCallback(() => onChange(clamp(snap(value + step))), [value, step, min, max, onChange]);
-  const dec = useCallback(() => onChange(clamp(snap(value - step))), [value, step, min, max, onChange]);
+  const applyStep = useCallback((direction: 1 | -1) => {
+    onChange(Math.min(max, Math.max(min, parseFloat((value + direction * step).toFixed(10)))));
+  }, [value, step, min, max, onChange]);
 
-  const startRepeat = (fn: () => void) => {
-    fn();
-    intervalRef.current = setInterval(fn, 80);
-  };
-  const stopRepeat = () => {
+  const stopHold = useCallback(() => {
+    if (timeoutRef.current)  { clearTimeout(timeoutRef.current);   timeoutRef.current  = null; }
     if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
-  };
+  }, []);
+
+  const startHold = useCallback((direction: 1 | -1) => {
+    stopHold();
+    applyStep(direction);
+    timeoutRef.current = setTimeout(() => {
+      intervalRef.current = setInterval(() => applyStep(direction), 180);
+    }, 450);
+  }, [applyStep, stopHold]);
+
+  useEffect(() => {
+    return () => stopHold();
+  }, [stopHold]);
 
   const startEdit = () => { setEditValue(String(value)); setEditing(true); };
   const commitEdit = () => {
@@ -99,11 +110,11 @@ export function StepperSlider({
         <button
           className="flex-none w-8 h-8 flex items-center justify-center rounded font-bold text-base select-none border transition-colors hover:opacity-80 active:scale-95"
           style={{ borderColor: categoryColor, color: categoryColor }}
-          onMouseDown={() => startRepeat(dec)}
-          onMouseUp={stopRepeat}
-          onMouseLeave={stopRepeat}
-          onTouchStart={e => { e.preventDefault(); startRepeat(dec); }}
-          onTouchEnd={stopRepeat}
+          onMouseDown={() => startHold(-1)}
+          onMouseUp={stopHold}
+          onMouseLeave={stopHold}
+          onTouchStart={e => { e.preventDefault(); startHold(-1); }}
+          onTouchEnd={stopHold}
         >−</button>
 
         <div className="relative flex-1 h-1.5 bg-foreground/10 rounded-full overflow-hidden">
@@ -116,11 +127,11 @@ export function StepperSlider({
         <button
           className="flex-none w-8 h-8 flex items-center justify-center rounded font-bold text-base select-none border transition-colors hover:opacity-80 active:scale-95"
           style={{ borderColor: categoryColor, color: categoryColor }}
-          onMouseDown={() => startRepeat(inc)}
-          onMouseUp={stopRepeat}
-          onMouseLeave={stopRepeat}
-          onTouchStart={e => { e.preventDefault(); startRepeat(inc); }}
-          onTouchEnd={stopRepeat}
+          onMouseDown={() => startHold(1)}
+          onMouseUp={stopHold}
+          onMouseLeave={stopHold}
+          onTouchStart={e => { e.preventDefault(); startHold(1); }}
+          onTouchEnd={stopHold}
         >+</button>
       </div>
 
