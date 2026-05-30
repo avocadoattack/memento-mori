@@ -103,20 +103,20 @@ export function Countdown({ currentAge, lifeExpectancy, freeHoursRemaining }: Pr
     <div className="flex flex-col items-center gap-12 my-12 w-full max-w-4xl mx-auto">
       <div className="text-center">
         <h3 className="text-xs font-bold uppercase tracking-widest opacity-60 mb-6">Countdown to Expected Death</h3>
-        <div className="flex flex-wrap justify-center items-end text-[var(--accent)] font-mono font-bold text-3xl sm:text-4xl md:text-5xl lg:text-[64px] tracking-tighter">
+        <div className="flex flex-wrap justify-center items-end text-[var(--accent)] font-mono font-bold tracking-tighter" style={{ fontSize: 'clamp(40px, 6vw, 72px)' }}>
           {units.map((u, i) => (
             <React.Fragment key={u.key}>
               <div className="flex flex-col items-center px-3 sm:px-5 md:px-7">
                 <span className="leading-none">{u.value}</span>
                 <span
-                  className="text-[10px] font-sans font-medium uppercase mt-2 text-foreground opacity-50"
-                  style={{ letterSpacing: '0.2em' }}
+                  className="font-sans font-medium uppercase mt-2 text-foreground opacity-50"
+                  style={{ fontSize: '13px', letterSpacing: '0.15em' }}
                 >
                   {u.label}
                 </span>
               </div>
               {i < units.length - 2 && (
-                <span className="text-foreground opacity-20 self-center font-thin text-xl sm:text-2xl md:text-3xl select-none leading-none">|</span>
+                <span className="text-foreground opacity-20 self-center font-thin select-none leading-none" style={{ fontSize: 'clamp(20px, 3vw, 36px)' }}>|</span>
               )}
             </React.Fragment>
           ))}
@@ -124,17 +124,17 @@ export function Countdown({ currentAge, lifeExpectancy, freeHoursRemaining }: Pr
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-        <div className="flex flex-col bg-card px-6 py-6 md:py-8 rounded-none border border-border shadow-sm text-center">
+        <div className="flex flex-col bg-card rounded-none border border-border shadow-sm text-center" style={{ padding: '32px', minHeight: '160px' }}>
           <div className="text-xs font-bold uppercase tracking-widest opacity-60 mb-2">Free Years Remaining</div>
-          <div ref={yearsRef} className="text-4xl md:text-[56px] font-bold font-mono text-accent leading-none mb-3">
+          <div ref={yearsRef} className="font-bold font-mono text-accent leading-none mb-3" style={{ fontSize: 'clamp(36px, 5vw, 56px)' }}>
             {(Math.max(0, freeHoursRemaining) / 8760).toFixed(1)}
           </div>
           <div className="text-xs uppercase tracking-widest opacity-40 font-bold mt-auto pt-2 border-t border-border">Years of life that are truly yours</div>
         </div>
 
-        <div className="flex flex-col bg-card px-6 py-6 md:py-8 rounded-none border border-border shadow-sm text-center">
+        <div className="flex flex-col bg-card rounded-none border border-border shadow-sm text-center" style={{ padding: '32px', minHeight: '160px' }}>
           <div className="text-xs font-bold uppercase tracking-widest opacity-60 mb-2">Free Saturdays Remaining</div>
-          <div ref={saturdaysRef} className="text-4xl md:text-[56px] font-bold font-mono text-foreground leading-none mb-3">
+          <div ref={saturdaysRef} className="font-bold font-mono text-foreground leading-none mb-3" style={{ fontSize: 'clamp(36px, 5vw, 56px)' }}>
             {Math.floor(Math.max(0, freeHoursRemaining) / 8).toLocaleString()}
           </div>
           <div className="text-xs uppercase tracking-widest opacity-40 font-bold mt-auto pt-2 border-t border-border">A full free day = 8 waking hours</div>

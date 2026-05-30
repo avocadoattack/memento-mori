@@ -17,9 +17,6 @@ interface DecadeLabel {
   y: number;
 }
 
-// Colors that are faint on light backgrounds — draw at slightly reduced alpha
-const FAINT_COLORS = new Set(['#deff0a', '#a1ff0a']);
-
 export function LifeGrid({ state, lifeExpectancy }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tooltipData, setTooltipData] = useState<{ x: number; y: number; week: number; age: number; category: string; hours: number; isPast: boolean } | null>(null);
@@ -99,9 +96,10 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const accent    = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()    || '#E63946';
-    const isDark    = document.documentElement.classList.contains('dark');
-    const pastColor = isDark ? '#6B6B6B' : '#BBBBBB';
+    const accent      = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#E63946';
+    const isDark      = document.documentElement.classList.contains('dark');
+    const pastColor   = isDark ? '#555555' : '#AAAAAA';
+    const futureColor = isDark ? '#2A2A2A' : '#D4CCBD';
 
     const DECADE_GAP = 4;
 
@@ -133,9 +131,8 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       const sq = squares[idx];
       if (!sq) return;
       const { x, y } = posOf(idx);
-      // Fix 7: slightly reduced alpha for near-background faint colors
-      ctx.globalAlpha = (!sq.isPast && FAINT_COLORS.has(sq.color)) ? 0.9 : 1;
-      ctx.fillStyle = sq.isPast ? pastColor : sq.color;
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = sq.isPast ? pastColor : futureColor;
       ctx.fillRect(x, y, sqSize, sqSize);
     };
 
@@ -167,11 +164,14 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
         const scale  = 1 + ((Math.sin(time / 300) + 1) / 2) * 0.25;
         const offset = (sqSize * scale - sqSize) / 2;
         ctx.save();
-        ctx.globalAlpha    = 1;
-        ctx.shadowColor    = accent;
-        ctx.shadowBlur     = 8;
-        ctx.fillStyle      = squares[currentWeek].color;
+        ctx.globalAlpha = 1;
+        ctx.shadowColor = accent;
+        ctx.shadowBlur  = 8;
+        ctx.fillStyle   = futureColor;
         ctx.fillRect(x - offset, y - offset, sqSize * scale, sqSize * scale);
+        ctx.strokeStyle = accent;
+        ctx.lineWidth   = 1;
+        ctx.strokeRect(x - offset + 0.5, y - offset + 0.5, sqSize * scale - 1, sqSize * scale - 1);
         ctx.restore();
       }
       rafId = requestAnimationFrame(animatePulse);
@@ -367,19 +367,6 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
         </div>
       )}
 
-      <div className="flex flex-wrap justify-center gap-4 mt-6 text-xs font-bold uppercase tracking-widest opacity-80">
-        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ background: '#147df5' }}></span> Sleep</div>
-        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ background: '#ff0000' }}></span> Work</div>
-        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ background: '#ffd300' }}></span> School</div>
-        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ background: '#0aff99' }}></span> Eating</div>
-        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ background: '#deff0a' }}></span> Grooming</div>
-        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ background: '#a1ff0a' }}></span> Chores</div>
-        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ background: '#ff8700' }}></span> Commute</div>
-        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ background: '#be0aff' }}></span> Social Media</div>
-        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ background: '#580aff' }}></span> TV</div>
-        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ background: '#8B50FF' }}></span> Streaming</div>
-        <div className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{ background: '#0aefff' }}></span> Free Time</div>
-      </div>
     </div>
   );
 }

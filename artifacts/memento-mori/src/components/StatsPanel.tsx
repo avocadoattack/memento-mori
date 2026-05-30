@@ -107,57 +107,56 @@ export function StatsPanel({ stats }: Props) {
         </div>
 
         <StatCard
-          title="Sleeping" value={stats.sleepHours_total} color="var(--cat-sleep)"
-          showHours={true}
-          perspectiveLine={`${(stats.sleepHours_total / 8760).toFixed(1)} years unconscious`}
+          title="Sleeping" value={stats.sleepHours_total / 8760} color="var(--cat-sleep)"
+          unit="yrs"
+          perspectiveLine={`${Math.round(stats.sleepHours_total / 24).toLocaleString()} days spent unconscious`}
         />
         <StatCard
-          title="Working" value={stats.workHours_total} color="var(--cat-work)"
-          showHours={true}
+          title="Working" value={stats.workHours_total / 8760} color="var(--cat-work)"
+          unit="yrs"
           perspectiveLine={`${Math.round(stats.workHours_total / 2080)} full-time work-years (at 2,080h/yr)`}
           secondaryPerspective={`That's ${(stats.workHours_total / (2080 * 40)).toFixed(1)} entire careers' worth of time`}
         />
         <StatCard
-          title="In School" value={stats.schoolHours_total} color="var(--cat-school)"
-          showHours={true}
-          perspectiveLine={`${stats.schoolCalendarYears ?? 0} calendar years of schooling`}
-          secondaryPerspective={`${(stats.schoolHours_total / 3500).toFixed(1)} PhD programs worth of study time (PhD ≈ 3,500 hrs)`}
+          title="In School" value={stats.schoolCalendarYears ?? 0} color="var(--cat-school)"
+          unit="yrs"
+          perspectiveLine={`${(stats.schoolHours_total / 3500).toFixed(1)} PhD programs worth of study time (PhD ≈ 3,500 hrs)`}
         />
         <StatCard
-          title="Eating & Cooking" value={stats.eatingHours_total} color="var(--cat-eating)"
-          showHours={true}
-          perspectiveLine={`${(stats.eatingHours_total / 8760).toFixed(1)} years at the table`}
+          title="Eating & Cooking" value={stats.eatingHours_total / 8760} color="var(--cat-eating)"
+          unit="yrs"
+          perspectiveLine={`${Math.round(stats.eatingHours_total / 24).toLocaleString()} days spent at the table`}
         />
         <StatCard
-          title="Grooming" value={stats.groomingHours_total} color="var(--cat-grooming)"
-          showHours={true}
+          title="Grooming" value={stats.groomingHours_total / 8760} color="var(--cat-grooming)"
+          unit="yrs"
           perspectiveLine={`${Math.round(stats.groomingHours_total / 24).toLocaleString()} days in front of the mirror`}
         />
         <StatCard
-          title="Chores" value={stats.choresHours_total} color="var(--cat-chores)"
-          showHours={true}
-          perspectiveLine={`${Math.round(stats.choresHours_total / 8760)} years of domestic labor`}
+          title="Chores" value={stats.choresHours_total / 8760} color="var(--cat-chores)"
+          unit="yrs"
+          perspectiveLine={`${Math.round(stats.choresHours_total / 24).toLocaleString()} days of domestic labor`}
         />
         <StatCard
-          title="Commuting" value={stats.commuteHours_total} color="var(--cat-commute)"
-          showHours={true}
+          title="Commuting" value={stats.commuteHours_total / 8760} color="var(--cat-commute)"
+          unit="yrs"
           perspectiveLine={`${Math.round(stats.commuteHours_total / 40).toLocaleString()} round trips from New York to Los Angeles by car`}
         />
         <StatCard
-          title="Social Media" value={stats.socialMediaHours_total} color="var(--cat-social)"
-          showHours={true}
+          title="Social Media" value={stats.socialMediaHours_total / 8760} color="var(--cat-social)"
+          unit="yrs"
           perspectiveLine={`${Math.round(stats.socialMediaHours_total / 6).toLocaleString()} books you could have read`}
           secondaryPerspective={`Or ${Math.round(stats.socialMediaHours_total / 700).toLocaleString()} languages learned to conversational level`}
         />
         <StatCard
-          title="Passive TV" value={stats.tvHours_total} color="var(--cat-tv)"
-          showHours={true}
+          title="Passive TV" value={stats.tvHours_total / 8760} color="var(--cat-tv)"
+          unit="yrs"
           perspectiveLine={`${Math.round(stats.tvHours_total).toLocaleString()} gym sessions you could have done`}
           secondaryPerspective={`Or ${Math.round(stats.tvHours_total / 49).toLocaleString()} complete rewatches of Breaking Bad`}
         />
         <StatCard
-          title="Streaming" value={stats.streamingHours_total} color="var(--cat-streaming)"
-          showHours={true}
+          title="Streaming" value={stats.streamingHours_total / 8760} color="var(--cat-streaming)"
+          unit="yrs"
           perspectiveLine={`${Math.round(stats.streamingHours_total / 30).toLocaleString()} complete Netflix series binged`}
           secondaryPerspective={`That's ${(stats.streamingYearsLost).toFixed(1)} years of your life on SVOD`}
         />

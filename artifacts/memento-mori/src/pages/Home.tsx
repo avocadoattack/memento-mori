@@ -31,7 +31,7 @@ export default function Home() {
   const augmentedStats = { ...stats, schoolCalendarYears };
 
   return (
-    <div className="min-h-[100dvh] pb-24 font-sans bg-background text-foreground selection:bg-accent selection:text-white transition-colors duration-250 ease-out">
+    <div className="min-h-[100dvh] font-sans bg-background text-foreground selection:bg-accent selection:text-white transition-colors duration-250 ease-out">
       <ThemeToggle />
 
       {/* Hero Section — full viewport height, content vertically centered */}
@@ -43,11 +43,11 @@ export default function Home() {
           position: 'relative',
         }}
       >
-        <div className="text-center mb-6">
-          <h1 className="text-5xl md:text-7xl lg:text-[85px] font-bold font-mono tracking-tighter mb-3">
+        <div className="text-center" style={{ marginBottom: '56px' }}>
+          <h1 className="font-bold font-mono tracking-tighter" style={{ fontSize: 'clamp(64px, 10vw, 120px)', marginBottom: '16px' }}>
             MEMENTO MORI
           </h1>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '36px', opacity: 0.85 }}>
+          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 'clamp(28px, 4vw, 48px)', opacity: 0.85 }}>
             Remember death
           </p>
         </div>
@@ -85,7 +85,7 @@ export default function Home() {
       </div>
 
       {/* Two Column Layout */}
-      <div className="max-w-[1400px] mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <div className="max-w-[1400px] mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-12 mb-20">
         <div className="lg:col-span-7">
           <StatsPanel stats={augmentedStats} />
         </div>
@@ -93,6 +93,57 @@ export default function Home() {
           <ControlsPanel state={state} lifeExpectancy={lifeExpectancy} />
         </div>
       </div>
+
+      {/* Footer */}
+      <footer style={{ backgroundColor: 'var(--footer-bg)', padding: '40px 60px' }}>
+        <div className="max-w-[1400px] mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-8">
+            {/* Left column */}
+            <div style={{ fontSize: '13px', opacity: 0.6, lineHeight: 1.7 }}>
+              <p className="font-bold mb-1">Memento Mori: Time Audit</p>
+              <p>All calculations are estimates based on population averages.</p>
+              <p>Your individual experience will vary.</p>
+            </div>
+
+            {/* Right column */}
+            <div>
+              <p className="font-bold uppercase tracking-widest mb-3" style={{ fontSize: '11px', opacity: 0.5 }}>Data Sources</p>
+              <ul style={{ fontSize: '12px', lineHeight: 1.9 }} className="space-y-0.5">
+                {[
+                  { label: 'Life Expectancy', source: 'UN World Population Prospects 2024', url: 'https://population.un.org/wpp/' },
+                  { label: 'Social Media Usage', source: 'DemandSage 2026', url: 'https://www.demandsage.com/average-time-spent-on-social-media/' },
+                  { label: 'Teen Social Media', source: 'Gallup 2024', url: 'https://news.gallup.com/poll/512576/teens-spend-average-hours-social-media-per-day.aspx' },
+                  { label: 'TV & Screen Time', source: 'BLS American Time Use Survey', url: 'https://www.bls.gov/tus/' },
+                  { label: 'Streaming Data', source: 'Nielsen Gauge 2025, SQ Magazine', url: 'https://sqmagazine.co.uk/streaming-statistics/' },
+                  { label: 'Commute Data', source: 'U.S. Census Bureau ACS', url: 'https://www.census.gov/topics/employment/commuting.html' },
+                  { label: 'Grooming', source: 'BLS ATUS, Euromonitor Personal Care Survey', url: null },
+                ].map(({ label, source, url }) => (
+                  <li key={label} style={{ opacity: 0.65 }}>
+                    <span className="font-bold">{label}:</span>{' '}
+                    {url ? (
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="no-underline hover:underline transition-colors"
+                        style={{ color: 'inherit' }}
+                        onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+                        onMouseLeave={e => (e.currentTarget.style.color = 'inherit')}
+                      >{source}</a>
+                    ) : source}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-foreground/10 pt-6 text-center">
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '16px', opacity: 0.55 }}>
+              Built with real data. Use your time wisely.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

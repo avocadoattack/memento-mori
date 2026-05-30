@@ -1,0 +1,130 @@
+Visual changes only. Do not touch calculation logic or the onboarding quiz.
+
+---
+
+CHANGE 1 — LIFE GRID: TWO-COLOR ONLY (REMOVE CATEGORY COLORS)
+
+The user no longer wants category colors in the life grid squares.
+Simplify to exactly two states:
+
+  Past weeks (index < currentAgeInWeeks):
+    Fill color: #AAAAAA in light mode, #555555 in dark mode (solid gray, fully opaque)
+
+  Future weeks (index >= currentAgeInWeeks):
+    Fill color: #D4CCBD in light mode, #2A2A2A in dark mode (subtle, slightly warm off-white/charcoal)
+
+  Current week (index === currentAgeInWeeks):
+    Same as future color but draw a 1px border in the accent color (#E63946 light / #FF4D5E dark)
+    Keep the existing pulse animation
+
+Remove all category color logic from the canvas draw loop entirely.
+Remove the color legend row below the grid entirely.
+The grid label above ("EACH SQUARE = 1 WEEK OF YOUR LIFE") stays.
+
+---
+
+CHANGE 2 — RESTORE ORIGINAL COLOR PALETTE FOR UI ELEMENTS ONLY
+
+The rainbow palette (from last prompt) was applied everywhere. Revert it to the original
+palette everywhere EXCEPT the grid (which is now two-color per Change 1).
+
+Apply these exact colors to: StepperSlider progress bars, stat card left-border accents,
+the "Where Your Life Goes" bar segments, and the category color dots in ControlsPanel section headers.
+
+Original palette to restore:
+  Sleep:        #3A86FF
+  Work:         #FF006E
+  School:       #FFBE0B
+  Eating:       #06D6A0
+  Grooming:     #C77DFF   (light lavender)
+  Chores:       #4CC9F0
+  Commute:      #FB5607
+  Social Media: #F72585
+  TV:           #9B5DE5
+  Streaming:    #0096C7
+  Free Time:    #00F5D4
+
+Search codebase for all rainbow hex values (#ff0000, #ff8700, #ffd300, #deff0a, #a1ff0a,
+#0aff99, #0aefff, #147df5, #580aff, #be0aff, #8B50FF) and replace with the above mapping:
+  #147df5 → #3A86FF
+  #ff0000 → #FF006E
+  #ffd300 → #FFBE0B
+  #0aff99 → #06D6A0
+  #deff0a → #C77DFF
+  #a1ff0a → #4CC9F0
+  #ff8700 → #FB5607
+  #be0aff → #F72585
+  #580aff → #9B5DE5
+  #8B50FF → #0096C7
+  #0aefff → #00F5D4
+
+---
+
+CHANGE 3 — STAT CARDS: CONVERT HOURS TO YEARS
+
+In StatsPanel.tsx, for every category stat card that currently shows a raw hour count
+as its primary large number, convert the display to years (2 decimal places):
+
+  Display value = (rawHours / 8760).toFixed(1) + " yrs"
+
+Apply to these cards: Sleeping, Working, Eating & Cooking, Grooming, Chores, Commuting,
+Social Media, Passive TV, Streaming.
+
+For "In School": use calendar years (sum of .years from active levels) — NOT hours/8760.
+Keep "Total Taken", "% Life That's Yours", "Free Days", "Free Years", "Free Saturdays"
+exactly as they are (they already show appropriate units).
+
+After converting, update each card's perspective line if it referenced the raw hour count:
+  Example for Social Media — old: "64,923 hours = 10,821 books you could have read"
+  New: "10,821 books you could have read" (remove the hours prefix entirely — it's now redundant)
+  Just keep the comparison clause with no hours preamble.
+
+---
+
+CHANGE 4 — HERO PROPORTIONS
+
+Scale up the hero section elements proportionally:
+
+  Title "MEMENTO MORI": increase from current size to clamp(64px, 10vw, 120px)
+  Subtitle "Remember death": increase from 36px to clamp(28px, 4vw, 48px)
+  Gap between title and subtitle: increase to 16px
+  Gap between subtitle and countdown section: increase to 56px
+  Countdown numbers: increase from current size to clamp(40px, 6vw, 72px)
+  Countdown unit labels: increase from 10px to 13px, letter-spacing: 0.15em
+  Gap between countdown and cards: increase to 48px
+  Cards: increase min-height to 160px, increase large number font size to clamp(36px, 5vw, 56px)
+  Card internal padding: increase to 32px
+
+Use clamp() throughout so proportions hold on all screen sizes from mobile to large desktop.
+
+---
+
+CHANGE 5 — FOOTER WITH DATA SOURCES
+
+Add a simple footer below the motivational copy at the bottom of the page.
+
+Style: full-width, background slightly darker than page background (in light mode: #E8E3D8, dark mode: #181818). Padding: 40px 60px. Two columns on desktop, stacked on mobile.
+
+Left column — small text (13px, 60% opacity):
+  "Memento Mori: Time Audit"
+  "All calculations are estimates based on population averages."
+  "Your individual experience will vary."
+
+Right column — "DATA SOURCES" header (11px, uppercase, tracking-wide) followed by a list of links:
+
+  • Life Expectancy: UN World Population Prospects 2024 — https://population.un.org/wpp/
+  • Social Media Usage: DemandSage 2026 — https://www.demandsage.com/average-time-spent-on-social-media/
+  • Teen Social Media: Gallup 2024 — https://news.gallup.com/poll/512576/teens-spend-average-hours-social-media-per-day.aspx
+  • TV & Screen Time: BLS American Time Use Survey — https://www.bls.gov/tus/
+  • Streaming Data: Nielsen Gauge 2025, SQ Magazine — https://sqmagazine.co.uk/streaming-statistics/
+  • Commute Data: U.S. Census Bureau American Community Survey — https://www.census.gov/topics/employment/commuting.html
+  • Grooming: BLS ATUS, Euromonitor Personal Care Survey
+
+Links: 12px, category accent color on hover, no underline by default, underline on hover.
+Bottom of footer: a thin divider line then centered text: "Built with real data. Use your time wisely."
+in Cormorant Garamond italic, 16px.
+
+---
+
+Output: ✅ Change 1–5, one line each. List all files modified.
+Do not change any calculation logic or add the onboarding quiz.
