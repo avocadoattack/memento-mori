@@ -17,7 +17,7 @@ export function useLifeCalc() {
   const [retirementAge, setRetirementAge] = useState(65);
   const [selectedEducationLevels, setSelectedEducationLevels] = useState<string[]>(DEFAULT_EDUCATION_LEVELS);
   const [eatingHoursPerDay, setEatingHoursPerDay] = useState(1.5);
-  const [groomingHoursPerDay, setGroomingHoursPerDay] = useState(0.75);
+  const [groomingHoursPerDay, setGroomingHoursPerDay] = useState(0.58);
   const [choresHoursPerDay, setChoresHoursPerDay] = useState(1.5);
   const [commuteHoursPerDay, setCommuteHoursPerDay] = useState(0.87);
   const [socialMediaHoursPerDay, setSocialMediaHoursPerDay] = useState(2.3);
@@ -30,7 +30,7 @@ export function useLifeCalc() {
     setOverrides(prev => ({ ...prev, [key]: true }));
   };
 
-  const getDynamicDefaults = useCallback((age: number) => {
+  const getDynamicDefaults = useCallback((age: number, g: Gender) => {
     let socialDef = 2.3;
     if (age <= 14) socialDef = 4.3;
     else if (age <= 17) socialDef = 5.3;
@@ -77,25 +77,26 @@ export function useLifeCalc() {
       streamingHoursPerDay:   streamingDef,
       sleepHoursPerNight:     8.0,
       eatingHoursPerDay:      1.5,
-      groomingHoursPerDay:    0.75,
+      groomingHoursPerDay:    g === 'female' ? 1.0 : 0.58,
       choresHoursPerDay:      1.5,
       commuteHoursPerDay:     0.87,
     };
   }, []);
 
   useEffect(() => {
-    const defs = getDynamicDefaults(currentAge);
+    const defs = getDynamicDefaults(currentAge, gender);
     if (!overrides.socialMediaHoursPerDay) setSocialMediaHoursPerDay(defs.socialMediaHoursPerDay);
     if (!overrides.workHoursPerWeek)       setWorkHoursPerWeek(defs.workHoursPerWeek);
     if (!overrides.workStartAge)           setWorkStartAge(defs.workStartAge);
     if (!overrides.retirementAge)          setRetirementAge(defs.retirementAge);
     if (!overrides.tvHoursPerDay)          setTvHoursPerDay(defs.tvHoursPerDay);
     if (!overrides.streamingHoursPerDay)   setStreamingHoursPerDay(defs.streamingHoursPerDay);
-  }, [currentAge, getDynamicDefaults, overrides]);
+    if (!overrides.groomingHoursPerDay)    setGroomingHoursPerDay(defs.groomingHoursPerDay);
+  }, [currentAge, gender, getDynamicDefaults, overrides]);
 
   const resetDefaults = useCallback(() => {
     setOverrides({});
-    const defs = getDynamicDefaults(currentAge);
+    const defs = getDynamicDefaults(currentAge, gender);
     setSocialMediaHoursPerDay(defs.socialMediaHoursPerDay);
     setWorkHoursPerWeek(defs.workHoursPerWeek);
     setWorkStartAge(defs.workStartAge);
@@ -108,7 +109,7 @@ export function useLifeCalc() {
     setGroomingHoursPerDay(defs.groomingHoursPerDay);
     setChoresHoursPerDay(defs.choresHoursPerDay);
     setCommuteHoursPerDay(defs.commuteHoursPerDay);
-  }, [currentAge, getDynamicDefaults]);
+  }, [currentAge, gender, getDynamicDefaults]);
 
   // Fix 5: country auto-detection — ipapi.co with 2s timeout, then timezone fallback
   useEffect(() => {
@@ -211,6 +212,9 @@ export function useLifeCalc() {
     const schoolHours_total    = EDUCATION_LEVELS
       .filter(l => selectedEducationLevels.includes(l.id))
       .reduce((sum, l) => sum + l.years * l.daysPerYear * l.hoursPerDay, 0);
+    const schoolCalendarYears  = EDUCATION_LEVELS
+      .filter(l => selectedEducationLevels.includes(l.id))
+      .reduce((sum, l) => sum + l.years, 0);
     const eatingHours_total    = eatingHoursPerDay    * 365.25 * lifeExpectancy;
     const groomingHours_total  = groomingHoursPerDay  * 365.25 * lifeExpectancy;
     const choresHours_total    = choresHoursPerDay    * 365.25 * lifeExpectancy;
@@ -234,7 +238,7 @@ export function useLifeCalc() {
     const streamingYearsLost   = streamingHours_total   / 8760;
 
     return {
-      totalLifeHours, sleepHours_total, workHours_total, schoolHours_total,
+      totalLifeHours, sleepHours_total, workHours_total, schoolHours_total, schoolCalendarYears,
       eatingHours_total, groomingHours_total, choresHours_total, commuteHours_total,
       socialMediaHours_total, tvHours_total, streamingHours_total,
       totalTaken, freeHours, freeHoursRemaining, freeYears, freeWeeks, pctLifeYours,

@@ -14,12 +14,13 @@ interface StepperSliderProps {
   isModified?: boolean;
   categoryColor?: string;
   tooltip?: string;
+  unit?: string;
 }
 
 export function StepperSlider({
   value, min, max, step, onChange,
   label, sublabel, isAutoDefault, isModified,
-  categoryColor = 'var(--accent)', tooltip,
+  categoryColor = 'var(--accent)', tooltip, unit,
 }: StepperSliderProps) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
@@ -96,12 +97,13 @@ export function StepperSlider({
           />
         ) : (
           <span
-            className="font-mono text-sm font-bold cursor-pointer select-none"
+            className="font-mono text-sm font-bold cursor-pointer select-none flex items-baseline gap-1"
             style={{ color: isModified ? categoryColor : undefined, opacity: isModified ? 1 : 0.7 }}
             onClick={startEdit}
             title="Click to type a value"
           >
             {fmt(value)}
+            {unit && <span style={{ fontSize: '11px', opacity: 0.5, fontWeight: 400 }}>{unit}</span>}
           </span>
         )}
       </div>

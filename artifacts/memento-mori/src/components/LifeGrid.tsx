@@ -186,7 +186,9 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
 
       // Canvas uses full width minus the HTML label column
       canvasWidth = fullWidth - LABEL_COL_WIDTH;
-      cols        = Math.max(1, Math.floor(canvasWidth / totalSqWidth));
+      const maxCols = Math.max(1, Math.floor(canvasWidth / totalSqWidth));
+      const candidates = [130, 104, 65, 52, 40, 26, 20, 13, 10, 8, 5, 4, 2, 1];
+      cols = candidates.find(c => c <= maxCols) ?? 52;
       rowsCount   = Math.ceil(totalWeeks / cols);
       height      = getRowY(rowsCount - 1) + totalSqWidth + DECADE_GAP;
 
@@ -206,7 +208,7 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
         const weekIdx = d * 52;
         if (weekIdx >= totalWeeks) break;
         const row = Math.floor(weekIdx / cols);
-        labels.push({ decade: d, y: Math.round(getRowY(row)) });
+        labels.push({ decade: d, y: Math.round(getRowY(row)) + Math.round(sqSize / 2) });
       }
       setDecadeLabels(labels);
 
@@ -306,7 +308,7 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
 
         {/* Fix 1: decade labels as HTML — crisp on all DPR screens */}
         {decadeLabels.map(({ decade, y }) => (
-          <span key={decade} style={{ ...labelStyle, top: y }}>{decade}</span>
+          <span key={decade} style={{ ...labelStyle, top: y, transform: 'translateY(-50%)' }}>{decade}</span>
         ))}
 
         {/* Fix 2: baby emoji to the LEFT of first square (in label column) */}

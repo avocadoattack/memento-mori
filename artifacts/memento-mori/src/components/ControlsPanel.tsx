@@ -21,10 +21,10 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
   );
 
   const ControlRow = ({
-    label, value, min, max, step, onChange, color, tooltip, name, sublabel
+    label, value, min, max, step, onChange, color, tooltip, name, sublabel, unit
   }: any) => {
     const isOverridden = state.overrides[name];
-    const isAuto = ['workHoursPerWeek', 'workStartAge', 'retirementAge', 'socialMediaHoursPerDay', 'tvHoursPerDay', 'streamingHoursPerDay'].includes(name) && !isOverridden;
+    const isAuto = ['workHoursPerWeek', 'workStartAge', 'retirementAge', 'socialMediaHoursPerDay', 'tvHoursPerDay', 'streamingHoursPerDay', 'groomingHoursPerDay'].includes(name) && !isOverridden;
 
     return (
       <StepperSlider
@@ -39,6 +39,7 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
         isModified={isOverridden}
         categoryColor={color}
         tooltip={tooltip}
+        unit={unit}
       />
     );
   };
@@ -138,10 +139,10 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
         </div>
 
         <SectionTitle icon={Moon}>Sleep</SectionTitle>
-        <ControlRow name="sleepHoursPerNight" label="Hours per night" value={state.sleepHoursPerNight} min={4} max={12} step={0.5} onChange={state.setSleepHoursPerNight} color="var(--cat-sleep)" />
+        <ControlRow name="sleepHoursPerNight" label="Hours per night" value={state.sleepHoursPerNight} min={4} max={12} step={0.5} onChange={state.setSleepHoursPerNight} color="var(--cat-sleep)" unit="h/night" />
 
         <SectionTitle icon={Briefcase}>Work</SectionTitle>
-        <ControlRow name="workHoursPerWeek" label="Hours per week" value={state.workHoursPerWeek} min={0} max={80} step={1} onChange={state.setWorkHoursPerWeek} color="var(--cat-work)" />
+        <ControlRow name="workHoursPerWeek" label="Hours per week" value={state.workHoursPerWeek} min={0} max={80} step={1} onChange={state.setWorkHoursPerWeek} color="var(--cat-work)" unit="h/week" />
         <div className="grid grid-cols-2 gap-4 mt-2 mb-2">
           <ControlRow name="workStartAge" label="Start Age" value={state.workStartAge} min={16} max={40} step={1} onChange={state.setWorkStartAge} color="var(--cat-work)" />
           <ControlRow name="retirementAge" label="Retire Age" value={state.retirementAge} min={40} max={85} step={1} onChange={state.setRetirementAge} color="var(--cat-work)" />
@@ -172,12 +173,12 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
         </div>
 
         <SectionTitle icon={Coffee}>Daily Habits (Hours/Day)</SectionTitle>
-        <ControlRow name="eatingHoursPerDay" label="Eating & Prep" value={state.eatingHoursPerDay} min={0.5} max={4} step={0.25} onChange={state.setEatingHoursPerDay} color="var(--cat-eating)" tooltip="US avg ~67min eating + ~30min food prep" />
-        <ControlRow name="groomingHoursPerDay" label="Grooming & Hygiene" value={state.groomingHoursPerDay} min={0.25} max={2} step={0.25} onChange={state.setGroomingHoursPerDay} color="var(--cat-grooming)" tooltip="Shower, dressing, bathroom" />
-        <ControlRow name="choresHoursPerDay" label="Household Chores" value={state.choresHoursPerDay} min={0} max={4} step={0.25} onChange={state.setChoresHoursPerDay} color="var(--cat-chores)" tooltip="BLS American Time Use Survey avg: ~1.5h/day" />
+        <ControlRow name="eatingHoursPerDay" label="Eating & Prep" value={state.eatingHoursPerDay} min={0.5} max={4} step={0.25} onChange={state.setEatingHoursPerDay} color="var(--cat-eating)" tooltip="US avg ~67min eating + ~30min food prep" unit="h/day" />
+        <ControlRow name="groomingHoursPerDay" label="Grooming & Hygiene" value={state.groomingHoursPerDay} min={0.25} max={2} step={0.25} onChange={state.setGroomingHoursPerDay} color="var(--cat-grooming)" tooltip="Source: BLS ATUS + Euromonitor · Male avg: ~35 min/day · Female avg: ~60 min/day" unit="h/day" />
+        <ControlRow name="choresHoursPerDay" label="Household Chores" value={state.choresHoursPerDay} min={0} max={4} step={0.25} onChange={state.setChoresHoursPerDay} color="var(--cat-chores)" tooltip="BLS American Time Use Survey avg: ~1.5h/day" unit="h/day" />
 
         <SectionTitle icon={Car}>Commute</SectionTitle>
-        <ControlRow name="commuteHoursPerDay" label="Commuting" value={state.commuteHoursPerDay} min={0} max={4} step={0.25} onChange={state.setCommuteHoursPerDay} color="var(--cat-commute)" tooltip="US Census avg: ~52 min/day round trip. Applied only during working years." />
+        <ControlRow name="commuteHoursPerDay" label="Commuting" value={state.commuteHoursPerDay} min={0} max={4} step={0.25} onChange={state.setCommuteHoursPerDay} color="var(--cat-commute)" tooltip="US Census avg: ~52 min/day round trip. Applied only during working years." unit="h/day" />
 
         <SectionTitle icon={Smartphone}>Time Wasters</SectionTitle>
         <ControlRow
@@ -186,6 +187,7 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
           value={state.socialMediaHoursPerDay} min={0} max={8} step={0.25}
           onChange={state.setSocialMediaHoursPerDay} color="var(--cat-social)"
           tooltip="Source: Gallup 2024. Global avg: 2h 21min. US avg: 2h 9min. Teen avg: 4.8h/day"
+          unit="h/day"
         />
         <ControlRow
           name="tvHoursPerDay"
@@ -193,6 +195,7 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
           value={state.tvHoursPerDay} min={0} max={10} step={0.25}
           onChange={state.setTvHoursPerDay} color="var(--cat-tv)"
           tooltip="Source: BLS American Time Use Survey — TV watching increases significantly with age."
+          unit="h/day"
         />
         <ControlRow
           name="streamingHoursPerDay"
@@ -200,6 +203,7 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
           value={state.streamingHoursPerDay} min={0} max={6} step={0.25}
           onChange={state.setStreamingHoursPerDay} color="var(--cat-streaming)"
           tooltip="Source: Nielsen 2025, SQ Magazine H1 2025 · North America VOD avg: ~1.15h/day · Streaming now captures ~47% of total TV time. Excludes YouTube."
+          unit="h/day"
         />
 
         <button
