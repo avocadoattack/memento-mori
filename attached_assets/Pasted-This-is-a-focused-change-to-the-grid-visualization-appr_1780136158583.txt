@@ -1,0 +1,77 @@
+This is a focused change to the grid visualization approach in Memento Mori: Time Audit.
+Change ONLY the LifeGrid canvas rendering logic. Do not touch any other file.
+
+---
+
+THE PROBLEM
+
+The current "dominant category per week" coloring approach is broken by design, not just by bug.
+Work (40h/week) always beats every other waking activity during working years (age 22–65).
+TV/Streaming beats everything in retirement. Eating, Grooming, Chores, Commute, and Social Media
+mathematically never dominate any week — so they never appear in the grid.
+
+The user wants to see ALL categories represented as colored squares proportional to total lifetime hours.
+
+---
+
+THE NEW APPROACH: PROPORTIONAL TOTAL ALLOCATION
+
+Instead of coloring each square by its week's dominant activity, fill the entire grid with colored
+blocks where each category gets a number of squares proportional to its share of total life hours.
+Squares are filled left-to-right, top-to-bottom (same reading order as the existing grid).
+
+STEP 1 — CALCULATE EACH CATEGORY'S TOTAL LIFETIME HOURS
+Use the exact same formulas already in useLifeCalc.ts:
+- sleepHours, workHours, schoolHours, eatingHours, groomingHours, choresHours,
+  commuteHours, socialMediaHours, tvHours, streamingHours, freeHours
+These are already computed — read them directly.
+
+STEP 2 — CALCULATE EACH CATEGORY'S SQUARE COUNT
+totalSquares = Math.round(lifeExpectancy * 52)
+For each category: squareCount = Math.round((categoryHours / totalLifeHours) * totalSquares)
+freeTimeSquares = totalSquares − sum of all other category square counts
+(This ensures total always equals totalSquares)
+
+STEP 3 — BUILD THE COLOR SEQUENCE ARRAY
+Build an array of length totalSquares where each element is a category color string.
+Order the categories in this sequence (most visually impactful ordering):
+  1. Sleep (#3A86FF)
+  2. Work (#FF006E)
+  3. Social Media (#F72585)
+  4. TV (#9B5DE5)
+  5. Streaming (#7B2D8B)
+  6. Eating (#06D6A0)
+  7. Chores (#4CC9F0)
+  8. Grooming (#8338EC)
+  9. Commute (#FB5607)
+  10. School (#FFBE0B)
+  11. Free Time (#00F5D4) ← always last, fills remainder
+
+This creates distinct color bands across the grid showing total life allocation.
+
+STEP 4 — OVERLAY PAST WEEKS
+After building the color array, override the first `currentAgeInWeeks` entries with the past-week
+gray color: '#6B6B6B' in dark mode, '#BBBBBB' in light mode.
+These are drawn as solid opaque gray, completely replacing the category color.
+
+STEP 5 — MARK CURRENT WEEK
+The square at index `currentAgeInWeeks` is the current week. Draw it normally from the color array
+but apply the pulse animation (the existing requestAnimationFrame scale/glow logic — keep as-is).
+
+STEP 6 — DRAW THE GRID
+Use the existing canvas draw loop — just replace the per-square color lookup with colorArray[i].
+All other canvas logic (decade labels, emoji icons, tooltip on hover, square size, gap) stays unchanged.
+
+STEP 7 — TOOLTIP UPDATE
+The tooltip currently shows "Dominated by: [category]". Update it to show the category based on
+the colorArray value at that square index:
+- Past weeks: "Week [N] · Age [X] · Already lived"
+- Future weeks: "[Category Name] · Part of [X,XXX] lifetime hours"
+
+STEP 8 — RE-RENDER TRIGGER
+The colorArray must be recomputed whenever ANY stat changes (same dependency as the existing redrawCanvas call).
+
+---
+
+Do NOT change any other files. Do NOT change the calculation logic in useLifeCalc.ts.
+Output: ✅ Grid color redesign complete — [one line confirming new approach works]

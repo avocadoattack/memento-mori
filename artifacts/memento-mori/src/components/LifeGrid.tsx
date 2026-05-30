@@ -8,98 +8,79 @@ interface Props {
 
 export function LifeGrid({ state, lifeExpectancy }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [tooltipData, setTooltipData] = useState<{ x: number; y: number; week: number; age: number; freeH: number; category: string } | null>(null);
+  const [tooltipData, setTooltipData] = useState<{ x: number; y: number; week: number; age: number; category: string; hours: number; isPast: boolean } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const totalWeeks = Math.ceil(lifeExpectancy * 52);
   const currentWeek = Math.floor(state.currentAge * 52);
 
   const squares = useMemo(() => {
-    const arr = [];
-    for (let i = 0; i < totalWeeks; i++) {
-      const age = i / 52;
-      
-      const sleepH = state.sleepHoursPerNight * 7;
-      let workH = 0;
-      let schoolH = 0;
-      let commuteH = 0;
+    // STEP 1 — total lifetime hours per category (same formulas as useLifeCalc.ts stats)
+    const totalLifeHours = lifeExpectancy * 365.25 * 24;
+    const workYears = Math.max(0, state.retirementAge - state.workStartAge);
 
-      for (const level of EDUCATION_LEVELS) {
-        if ((state.selectedEducationLevels as string[]).includes(level.id)
-            && age >= level.startAge && age < level.endAge) {
-          schoolH = level.hoursPerDay * (level.daysPerYear / 52);
-          break;
-        }
+    const sleepHours = state.sleepHoursPerNight * 365.25 * lifeExpectancy;
+    const workHours = state.workHoursPerWeek * 52 * workYears;
+    const schoolHours = EDUCATION_LEVELS
+      .filter(l => (state.selectedEducationLevels as string[]).includes(l.id))
+      .reduce((sum, l) => sum + l.years * l.daysPerYear * l.hoursPerDay, 0);
+    const eatingHours = state.eatingHoursPerDay * 365.25 * lifeExpectancy;
+    const groomingHours = state.groomingHoursPerDay * 365.25 * lifeExpectancy;
+    const choresHours = state.choresHoursPerDay * 365.25 * lifeExpectancy;
+    const commuteHours = state.commuteHoursPerDay * 260 * workYears;
+    const socialMediaHours = state.socialMediaHoursPerDay * 365.25 * lifeExpectancy;
+    const tvHours = state.tvHoursPerDay * 365.25 * lifeExpectancy;
+    const streamingHours = state.streamingHoursPerDay * 365.25 * lifeExpectancy;
+
+    const usedHours = sleepHours + workHours + schoolHours + eatingHours + groomingHours +
+      choresHours + commuteHours + socialMediaHours + tvHours + streamingHours;
+    // Parity with useLifeCalc.ts: unclamped. (Only surfaced for Free Time squares,
+    // which only exist when freeHours is positive, so a negative value is never shown.)
+    const freeHours = totalLifeHours - usedHours;
+
+    // STEP 2/3 — square count per category, in visual-impact order (free time last)
+    const totalSquares = totalWeeks;
+    const cats = [
+      { name: 'Sleep',        color: '#3A86FF', hours: sleepHours },
+      { name: 'Work',         color: '#FF006E', hours: workHours },
+      { name: 'Social Media', color: '#F72585', hours: socialMediaHours },
+      { name: 'TV',           color: '#9B5DE5', hours: tvHours },
+      { name: 'Streaming',    color: '#7B2D8B', hours: streamingHours },
+      { name: 'Eating',       color: '#06D6A0', hours: eatingHours },
+      { name: 'Chores',       color: '#4CC9F0', hours: choresHours },
+      { name: 'Grooming',     color: '#8338EC', hours: groomingHours },
+      { name: 'Commute',      color: '#FB5607', hours: commuteHours },
+      { name: 'School',       color: '#FFBE0B', hours: schoolHours },
+    ];
+
+    // Explicit integer counts. If rounding overshoots totalSquares, trim from the
+    // largest categories first so the total is deterministic (never truncates by fill order).
+    const counts = cats.map(cat => Math.round((cat.hours / totalLifeHours) * totalSquares));
+    let overflow = counts.reduce((a, b) => a + b, 0) - totalSquares;
+    if (overflow > 0) {
+      const byLargest = counts.map((_, idx) => idx).sort((a, b) => counts[b] - counts[a]);
+      for (const idx of byLargest) {
+        if (overflow <= 0) break;
+        const trim = Math.min(counts[idx], overflow);
+        counts[idx] -= trim;
+        overflow -= trim;
       }
-      if (age >= state.workStartAge && age < state.retirementAge) {
-        workH = state.workHoursPerWeek;
-        commuteH = state.commuteHoursPerDay * 5;
-      }
-
-      const eatingH = state.eatingHoursPerDay * 7;
-      const groomingH = state.groomingHoursPerDay * 7;
-      const choresH = state.choresHoursPerDay * 7;
-      
-      let socialH = 1.7 * 7;
-      if (age <= 14) socialH = 4.3 * 7;
-      else if (age <= 17) socialH = 5.3 * 7;
-      else if (age <= 24) socialH = 3.1 * 7;
-      else if (age <= 34) socialH = 2.3 * 7;
-      else if (age <= 44) socialH = 2.1 * 7;
-      else if (age <= 54) socialH = 2.2 * 7;
-      else if (age <= 64) socialH = 2.1 * 7;
-      
-      if (Math.abs(age - state.currentAge) < 5) {
-        socialH = state.socialMediaHoursPerDay * 7;
-      }
-
-      // Age-adjusted TV hours (same lookup table as getDynamicDefaults)
-      let tvH: number;
-      if (age <= 24) tvH = 1.5 * 7;
-      else if (age <= 34) tvH = 2.5 * 7;
-      else if (age <= 44) tvH = 3.0 * 7;
-      else if (age <= 54) tvH = 3.5 * 7;
-      else if (age <= 64) tvH = 4.5 * 7;
-      else tvH = 5.5 * 7;
-      if (Math.abs(age - state.currentAge) < 5) tvH = state.tvHoursPerDay * 7;
-
-      // Age-adjusted streaming hours (Nielsen 2025 / SQ Magazine H1 2025)
-      let streamH: number;
-      if (age <= 24) streamH = 2.0 * 7;
-      else if (age <= 34) streamH = 1.75 * 7;
-      else if (age <= 44) streamH = 1.5 * 7;
-      else if (age <= 54) streamH = 1.25 * 7;
-      else if (age <= 64) streamH = 1.0 * 7;
-      else streamH = 0.75 * 7;
-      if (Math.abs(age - state.currentAge) < 5) streamH = state.streamingHoursPerDay * 7;
-
-      const totalObligatory = sleepH + workH + schoolH + eatingH + groomingH + choresH + commuteH + socialH + tvH + streamH;
-      const freeH = Math.max(0, 168 - totalObligatory);
-
-      // Dominant = biggest WAKING obligation (sleep excluded — at 56h/week it
-      // always wins, conveying no life-stage info). Start from freeH so free
-      // time shows when nothing else beats it.
-      let dominantColorHex = '#00F5D4';
-      let maxH = freeH;
-      let category = 'Free Time';
-
-      if (workH > maxH) { maxH = workH; dominantColorHex = '#FF006E'; category = 'Work'; }
-      if (schoolH > maxH) { maxH = schoolH; dominantColorHex = '#FFBE0B'; category = 'School'; }
-      if (eatingH > maxH) { maxH = eatingH; dominantColorHex = '#06D6A0'; category = 'Eating'; }
-      if (groomingH > maxH) { maxH = groomingH; dominantColorHex = '#8338EC'; category = 'Grooming'; }
-      if (choresH > maxH) { maxH = choresH; dominantColorHex = '#4CC9F0'; category = 'Chores'; }
-      if (commuteH > maxH) { maxH = commuteH; dominantColorHex = '#FB5607'; category = 'Commute'; }
-      if (socialH > maxH) { maxH = socialH; dominantColorHex = '#F72585'; category = 'Social Media'; }
-      if (tvH > maxH) { maxH = tvH; dominantColorHex = '#9B5DE5'; category = 'TV'; }
-      if (streamH > maxH) { maxH = streamH; dominantColorHex = '#7B2D8B'; category = 'Streaming'; }
-
-      const isPast = i < currentWeek;
-      const isCurrent = i === currentWeek;
-
-      arr.push({ i, age, freeH, dominantColorHex, category, isPast, isCurrent });
     }
+    // Free Time fills the remainder so the total always equals totalSquares
+    const freeCount = Math.max(0, totalSquares - counts.reduce((a, b) => a + b, 0));
+
+    const arr: { i: number; color: string; category: string; hours: number; age: number; isPast: boolean; isCurrent: boolean }[] = [];
+    const push = (color: string, category: string, hours: number) => {
+      const i = arr.length;
+      arr.push({ i, color, category, hours, age: i / 52, isPast: i < currentWeek, isCurrent: i === currentWeek });
+    };
+    cats.forEach((cat, ci) => {
+      for (let k = 0; k < counts[ci]; k++) push(cat.color, cat.name, cat.hours);
+    });
+    for (let k = 0; k < freeCount; k++) push('#00F5D4', 'Free Time', freeHours);
+
     return arr;
-  }, [totalWeeks, currentWeek, state]);
+  }, [totalWeeks, currentWeek, lifeExpectancy, state]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -112,7 +93,7 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
     const fgColor = getComputedStyle(document.documentElement)
       .getPropertyValue('--foreground').trim() || '#1A1A1A';
     const isDark = document.documentElement.classList.contains('dark');
-    const pastColor = isDark ? '#4A4A4A' : '#BBBBBB';
+    const pastColor = isDark ? '#6B6B6B' : '#BBBBBB';
 
     const LABEL_WIDTH = 24;
     const DECADE_GAP = 4;
@@ -146,7 +127,7 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       if (!sq) return;
       const { x, y } = posOf(idx);
       ctx.globalAlpha = 1;
-      ctx.fillStyle = sq.isPast ? pastColor : sq.dominantColorHex;
+      ctx.fillStyle = sq.isPast ? pastColor : sq.color;
       ctx.fillRect(x, y, sqSize, sqSize);
     };
 
@@ -216,7 +197,7 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
         ctx.save();
         ctx.shadowColor = accent;
         ctx.shadowBlur = 8;
-        ctx.fillStyle = squares[currentWeek].dominantColorHex;
+        ctx.fillStyle = squares[currentWeek].color;
         ctx.fillRect(x - offset, y - offset, sqSize * scale, sqSize * scale);
         ctx.restore();
       }
@@ -280,8 +261,9 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
           y: e.clientY,
           week: index + 1,
           age: squares[index].age,
-          freeH: squares[index].freeH,
           category: squares[index].category,
+          hours: squares[index].hours,
+          isPast: squares[index].isPast,
         });
       } else {
         setTooltipData(null);
@@ -326,9 +308,14 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
             borderRadius: '6px',
           }}
         >
-          <div className="font-bold">Week {tooltipData.week} · Age {Math.floor(tooltipData.age)}</div>
-          <div className="opacity-80">{tooltipData.freeH.toFixed(1)}h free this week</div>
-          <div className="opacity-80">Dominated by: {tooltipData.category}</div>
+          {tooltipData.isPast ? (
+            <div className="font-bold">Week {tooltipData.week} · Age {Math.floor(tooltipData.age)} · Already lived</div>
+          ) : (
+            <>
+              <div className="font-bold">{tooltipData.category}</div>
+              <div className="opacity-80">Part of {Math.round(tooltipData.hours).toLocaleString()} lifetime hours</div>
+            </>
+          )}
         </div>
       )}
 
