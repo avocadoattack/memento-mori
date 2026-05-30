@@ -84,7 +84,7 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
       >
         {/* Header */}
         <div className="text-center mb-10" style={{ width: '100%', textAlign: 'center' }}>
-          <h1 className="font-mono tracking-tighter" style={{ textAlign: 'center', width: '100%', whiteSpace: 'nowrap', fontSize: 'clamp(40px, 7vw, 88px)', fontWeight: 900 }}>
+          <h1 className="font-mono tracking-tighter text-center" style={{ textAlign: 'center', width: '100%', whiteSpace: 'nowrap', fontSize: 'clamp(40px, 7vw, 88px)', fontWeight: 900 }}>
             MEMENTO MORI
           </h1>
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 'clamp(24px, 3.5vw, 40px)', opacity: 0.85, textAlign: 'center', width: '100%' }}>
@@ -125,11 +125,7 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
                 key={g}
                 type="button"
                 onClick={() => handleGender(g)}
-                className={`py-4 text-sm font-bold uppercase tracking-widest border-2 transition-colors ${
-                  genderSel === g
-                    ? 'bg-foreground text-background border-foreground'
-                    : 'bg-transparent border-border text-foreground/60 hover:border-foreground/40'
-                }`}
+                className="py-4 text-sm font-bold uppercase tracking-widest border-2 transition-colors bg-foreground text-background border-foreground rounded-tl-[0px] rounded-tr-[0px] rounded-br-[0px] rounded-bl-[0px] pt-[16px] pb-[16px] pl-[10px] pr-[10px]"
               >
                 {g === 'male' ? 'Male' : 'Female'}
               </button>
