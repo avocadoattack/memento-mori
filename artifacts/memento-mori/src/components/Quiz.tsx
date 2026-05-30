@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings } from 'lucide-react';
+import { Settings, Minus, Plus } from 'lucide-react';
 import { StepperSlider } from './StepperSlider';
 import { CountryCombobox } from './CountryCombobox';
 import { LIFE_EXPECTANCY } from '../lib/lifeExpectancy';
@@ -31,6 +31,12 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
     if (!isNaN(v) && v >= 1 && v <= 99) state.setCurrentAge(v);
   };
 
+  const stepAge = (delta: number) => {
+    const current = ageValid ? ageNum : 0;
+    const next = Math.min(99, Math.max(1, current + delta));
+    handleAgeChange(String(next));
+  };
+
   const handleGender = (g: Gender) => {
     setGenderSel(g);
     state.setGender(g);
@@ -53,19 +59,18 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
   };
 
   const GroupTitle = ({ children }: { children: React.ReactNode }) => (
-    <h4 className="text-xs font-bold uppercase tracking-widest text-foreground/50 mt-6 mb-3">{children}</h4>
+    <h4 className="text-xs font-bold uppercase tracking-widest text-foreground/50 mt-5 mb-2">{children}</h4>
+  );
+
+  const SectionLabel = ({ children }: { children: React.ReactNode }) => (
+    <p className="text-xs font-bold uppercase tracking-widest opacity-50 mb-2 text-center">{children}</p>
   );
 
   return (
     <div
-      className="font-sans bg-background text-foreground selection:bg-accent selection:text-white"
+      className="font-sans bg-background text-foreground selection:bg-accent selection:text-white min-h-screen flex flex-col items-center justify-center"
       style={{
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        textAlign: 'center',
-        padding: '40px 24px',
+        padding: '32px 24px',
         boxSizing: 'border-box',
         opacity: exiting ? 0 : 1,
         transition: 'opacity 0.4s ease',
@@ -74,62 +79,134 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
       <div
         style={{
           width: '100%',
-          maxWidth: '540px',
+          maxWidth: '480px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           textAlign: 'center',
-          gap: '24px',
+          gap: '0',
         }}
       >
         {/* Header */}
-        <div className="text-center mb-10" style={{ width: '100%', textAlign: 'center' }}>
-          <h1 className="font-mono tracking-tighter" style={{ textAlign: 'center', width: '100%', whiteSpace: 'nowrap', fontSize: 'clamp(40px, 7vw, 88px)', fontWeight: 900 }}>
+        <div className="text-center w-full mb-6">
+          <h1
+            className="font-mono tracking-tighter"
+            style={{
+              whiteSpace: 'nowrap',
+              fontSize: 'clamp(36px, 7vw, 80px)',
+              fontWeight: 900,
+              lineHeight: 1,
+            }}
+          >
             MEMENTO MORI
           </h1>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 'clamp(24px, 3.5vw, 40px)', opacity: 0.85, textAlign: 'center', width: '100%' }}>
+          <p
+            style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontStyle: 'italic',
+              fontSize: 'clamp(18px, 3vw, 28px)',
+              opacity: 0.7,
+              marginTop: '4px',
+              lineHeight: 1.2,
+            }}
+          >
             Remember death
           </p>
-          <p style={{ fontSize: '14px', opacity: 0.6, marginTop: '12px' }}>
-            Let's calculate how much of your life is truly yours.
+          <p
+            style={{
+              fontSize: '13px',
+              opacity: 0.45,
+              marginTop: '8px',
+              letterSpacing: '0.01em',
+            }}
+          >
+            How much of your life is truly yours?
           </p>
         </div>
 
         {/* FIELD 1 — AGE */}
-        <div className="mb-8 text-center">
-          <label className="text-xs font-bold uppercase tracking-widest opacity-50 block mb-3">
-            How old are you?
-          </label>
-          <input
-            type="number"
-            inputMode="numeric"
-            value={ageInput}
-            onChange={e => handleAgeChange(e.target.value)}
-            min={1}
-            max={99}
-            placeholder="00"
-            autoFocus
-            className="w-40 text-center bg-transparent border-0 border-b-2 border-border focus:border-accent focus:outline-none font-mono font-bold transition-colors mx-auto"
-            style={{ fontSize: '48px', padding: '4px 0' }}
-          />
+        <div className="w-full mb-5">
+          <SectionLabel>How old are you?</SectionLabel>
+          <div className="flex flex-col items-center gap-3">
+            <div
+              className="font-mono font-black leading-none select-none"
+              style={{
+                fontFamily: "'Space Grotesk', monospace",
+                fontSize: 'clamp(72px, 14vw, 96px)',
+                fontWeight: 900,
+                letterSpacing: '-0.04em',
+                opacity: ageValid ? 1 : 0.18,
+                minWidth: '3ch',
+                textAlign: 'center',
+              }}
+            >
+              {ageValid ? String(ageNum).padStart(2, '0') : '00'}
+            </div>
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => stepAge(-1)}
+                aria-label="Decrease age"
+                className="flex items-center justify-center border-2 border-border hover:border-foreground/60 transition-colors"
+                style={{ width: 44, height: 44 }}
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+              <input
+                type="number"
+                inputMode="numeric"
+                value={ageInput}
+                onChange={e => handleAgeChange(e.target.value)}
+                min={1}
+                max={99}
+                autoFocus
+                className="sr-only"
+                tabIndex={-1}
+                aria-hidden="true"
+              />
+              <button
+                type="button"
+                onClick={() => stepAge(1)}
+                aria-label="Increase age"
+                className="flex items-center justify-center border-2 border-border hover:border-foreground/60 transition-colors"
+                style={{ width: 44, height: 44 }}
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs opacity-30" style={{ marginTop: '-4px' }}>
+              tap + / − or type directly
+            </p>
+            {/* Hidden accessible numeric input so users can also type */}
+            <input
+              type="number"
+              inputMode="numeric"
+              value={ageInput}
+              onChange={e => handleAgeChange(e.target.value)}
+              min={1}
+              max={99}
+              placeholder="Type age…"
+              className="w-24 text-center bg-transparent border-0 border-b border-border/40 focus:border-accent focus:outline-none font-mono font-bold transition-colors"
+              style={{ fontSize: '16px', padding: '2px 0', opacity: 0.45 }}
+            />
+          </div>
         </div>
 
         {/* FIELD 2 — GENDER */}
-        <div className="mb-8">
-          <label className="text-xs font-bold uppercase tracking-widest opacity-50 block mb-3 text-center">
-            Gender
-          </label>
-          <div className="grid grid-cols-2 gap-3">
+        <div className="w-full mb-5">
+          <SectionLabel>Gender</SectionLabel>
+          <div className="flex justify-center gap-3">
             {(['male', 'female'] as Gender[]).map(g => (
               <button
                 key={g}
                 type="button"
                 onClick={() => handleGender(g)}
-                className={`py-4 text-sm font-bold uppercase tracking-widest border-2 transition-colors ${
+                className={`py-3 text-sm font-bold uppercase tracking-widest border-2 transition-colors ${
                   genderSel === g
                     ? 'bg-foreground text-background border-foreground'
                     : 'bg-transparent border-border text-foreground/60 hover:border-foreground/40'
                 }`}
+                style={{ width: '140px' }}
               >
                 {g === 'male' ? 'Male' : 'Female'}
               </button>
@@ -138,10 +215,8 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
         </div>
 
         {/* FIELD 3 — COUNTRY */}
-        <div className="mb-8">
-          <label className="text-xs font-bold uppercase tracking-widest opacity-50 block mb-3 text-center">
-            Where do you live?
-          </label>
+        <div className="w-full mb-5">
+          <SectionLabel>Where do you live?</SectionLabel>
           <CountryCombobox countries={countries} value={state.country} onChange={state.setCountry} />
         </div>
 
@@ -149,20 +224,20 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
         <button
           type="button"
           onClick={() => setAdvancedOpen(o => !o)}
-          className="flex items-center justify-center gap-1.5 mx-auto mb-2 transition-opacity hover:opacity-100"
-          style={{ fontSize: '13px', opacity: 0.6 }}
+          className="flex items-center justify-center gap-1.5 mx-auto mb-1 transition-opacity hover:opacity-100"
+          style={{ fontSize: '12px', opacity: 0.5 }}
         >
-          <Settings className="w-3.5 h-3.5" />
+          <Settings className="w-3 h-3" />
           Advanced settings
         </button>
 
         <div
-          className="grid transition-[grid-template-rows] duration-300 ease-in-out"
+          className="w-full grid transition-[grid-template-rows] duration-300 ease-in-out"
           style={{ gridTemplateRows: advancedOpen ? '1fr' : '0fr' }}
         >
           <div className="overflow-hidden">
-            <div className="pt-4 pb-2">
-              <p style={{ fontSize: '14px', opacity: 0.7, fontStyle: 'italic', lineHeight: 1.6 }} className="mb-2">
+            <div className="pt-3 pb-2 text-left">
+              <p style={{ fontSize: '13px', opacity: 0.6, fontStyle: 'italic', lineHeight: 1.5 }} className="mb-1">
                 These defaults are drawn from real research data — BLS American Time Use Survey, Gallup 2024,
                 DemandSage 2026, and UN WPP 2024. They represent population averages for your age and country.
                 Override any value if your life differs significantly from the average.
@@ -221,7 +296,7 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
           type="button"
           disabled={!canSubmit}
           onClick={onComplete}
-          className={`w-full mt-6 py-4 font-bold uppercase tracking-widest text-sm transition-colors ${
+          className={`w-full mt-4 py-4 font-bold uppercase tracking-widest text-sm transition-colors ${
             canSubmit
               ? 'bg-accent text-white hover:opacity-90 cursor-pointer'
               : 'bg-foreground/10 text-foreground/40 cursor-not-allowed'
@@ -234,8 +309,8 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
         <button
           type="button"
           onClick={onSkip}
-          className="mx-auto mt-5 transition-opacity hover:opacity-80"
-          style={{ fontSize: '13px', opacity: 0.5 }}
+          className="mx-auto mt-3 transition-opacity hover:opacity-80"
+          style={{ fontSize: '12px', opacity: 0.45 }}
         >
           Skip to app →
         </button>
