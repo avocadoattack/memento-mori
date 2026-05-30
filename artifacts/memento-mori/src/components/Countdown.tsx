@@ -103,31 +103,58 @@ export function Countdown({ currentAge, lifeExpectancy, freeHoursRemaining }: Pr
     <div className="flex flex-col items-center gap-12 my-12 w-full max-w-4xl mx-auto">
       <div className="text-center">
         <h3 className="text-xs font-bold uppercase tracking-widest opacity-60 mb-6">Countdown to Expected Death</h3>
-        <div className="flex flex-wrap justify-center items-end text-[var(--accent)] font-mono font-bold tracking-tighter" style={{ fontSize: 'clamp(40px, 6vw, 72px)', fontVariantNumeric: 'tabular-nums' }}>
+        <div
+          className="text-[var(--accent)] font-mono font-bold tracking-tighter"
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            flexWrap: 'nowrap',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            gap: '0',
+            width: '100%',
+            overflowX: 'visible',
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
           {units.map((u, i) => (
             <React.Fragment key={u.key}>
-              <div className="flex flex-col items-center px-3 sm:px-5 md:px-7">
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  flex: '0 0 auto',
+                  minWidth: 0,
+                  padding: '0 clamp(4px, 1vw, 16px)',
+                }}
+              >
                 <span
-                  className="leading-none"
                   style={{
                     display: 'inline-block',
                     minWidth: u.key === 'secs' ? '2.2ch' : '2ch',
                     textAlign: 'center',
                     fontVariantNumeric: 'tabular-nums',
                     fontFeatureSettings: '"tnum" 1',
+                    fontSize: 'clamp(28px, 5vw, 64px)',
+                    fontWeight: 700,
+                    lineHeight: 1,
                   }}
                 >
                   {u.value}
                 </span>
                 <span
-                  className="font-sans font-medium uppercase mt-2 text-foreground opacity-50"
-                  style={{ fontSize: '13px', letterSpacing: '0.15em' }}
+                  className="font-sans font-medium uppercase text-foreground"
+                  style={{ fontSize: '10px', letterSpacing: '0.15em', opacity: 0.6, marginTop: '4px', whiteSpace: 'nowrap' }}
                 >
                   {u.label}
                 </span>
               </div>
               {i < units.length - 2 && (
-                <span className="text-foreground opacity-20 self-center font-thin select-none leading-none" style={{ fontSize: 'clamp(20px, 3vw, 36px)' }}>|</span>
+                <span
+                  className="text-foreground font-thin select-none"
+                  style={{ alignSelf: 'center', opacity: 0.2, fontSize: 'clamp(16px, 2vw, 28px)', flex: '0 0 auto', lineHeight: 1, marginBottom: '18px' }}
+                >|</span>
               )}
             </React.Fragment>
           ))}

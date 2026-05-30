@@ -1,0 +1,186 @@
+Three layout fixes only. Do not change any calculation logic, colors, or other components.
+
+---
+
+FIX 1 — COUNTDOWN: FORCE SINGLE ROW, NO WRAPPING
+
+The countdown is breaking onto two lines because the container is too narrow for 7 units.
+
+In Countdown.tsx (or wherever the countdown row is rendered):
+
+Replace the current countdown container with:
+```tsx
+<div style={{
+  display: 'flex',
+  flexDirection: 'row',
+  flexWrap: 'nowrap',          // never wrap to a second line
+  alignItems: 'flex-end',
+  justifyContent: 'center',
+  gap: '0',
+  width: '100%',
+  overflowX: 'visible',
+}}>
+```
+
+For each unit block (number + label pair):
+```tsx
+<div style={{
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  flex: '0 0 auto',            // do not shrink
+  minWidth: 0,
+  padding: '0 clamp(4px, 1vw, 16px)',  // responsive horizontal spacing
+}}>
+  <span style={{
+    display: 'inline-block',
+    minWidth: '2ch',
+    textAlign: 'center',
+    fontVariantNumeric: 'tabular-nums',
+    fontSize: 'clamp(28px, 5vw, 64px)', // responsive — shrinks on small screens
+    fontWeight: 700,
+    lineHeight: 1,
+  }}>
+    {value}
+  </span>
+  <span style={{
+    fontSize: '10px',
+    letterSpacing: '0.15em',
+    opacity: 0.6,
+    marginTop: '4px',
+    whiteSpace: 'nowrap',
+  }}>
+    {label}
+  </span>
+</div>
+```
+
+For the separator `|` between units:
+```tsx
+<span style={{
+  alignSelf: 'center',
+  opacity: 0.2,
+  fontSize: 'clamp(16px, 2vw, 28px)',
+  flex: '0 0 auto',
+  lineHeight: 1,
+  marginBottom: '18px',        // offset to align with numbers not labels
+}}>|</span>
+```
+
+This guarantees all 7 units stay on one row at any screen width ≥ 320px.
+
+---
+
+FIX 2 — CHEVRON: RENDER IN FLOW, NOT ABSOLUTELY POSITIONED
+
+The absolute-positioned chevron is appearing in the wrong place because the hero section
+height is unreliable across environments (Replit dev banner, browser chrome, etc.).
+
+Remove the `position: absolute; bottom: 32px` approach entirely.
+
+Replace with a flex-column layout where the chevron is the last child and pushed to the bottom:
+
+```tsx
+// Hero section wrapper — flex column, full height
+<section style={{
+  height: 'calc(var(--dvh, 1vh) * 100)',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  paddingTop: 'clamp(40px, 7vh, 72px)',
+  paddingBottom: '28px',
+  boxSizing: 'border-box',
+}}>
+
+  {/* Main content block — grows to fill space */}
+  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+    {/* Title */}
+    {/* Subtitle */}
+    {/* Countdown */}
+    {/* Cards row */}
+  </div>
+
+  {/* Chevron — always at bottom, never overlapping content */}
+  <button
+    onClick={() => document.getElementById('life-grid')?.scrollIntoView({ behavior: 'smooth' })}
+    style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.5, padding: '8px', flexShrink: 0 }}
+    aria-label="Scroll to life grid"
+  >
+    <ChevronDown size={28} style={{ animation: 'bounce 1.5s ease-in-out infinite' }} />
+  </button>
+
+</section>
+```
+
+The `flex: 1` on the inner content block pushes the chevron to the bottom naturally,
+regardless of how tall the viewport is. No absolute positioning needed.
+
+Keep the existing bounce keyframe animation for the chevron.
+
+---
+
+FIX 3 — LIFE GRID: CLEAR SEPARATION FROM HERO, PROPER CENTERING
+
+The grid section is overlapping the hero cards because:
+a) The `#life-grid` section has no top margin/padding separating it from what's above
+b) The `width: fit-content` on the canvas wrapper may not center correctly in all containers
+
+Fix both:
+
+In Home.tsx or wherever `id="life-grid"` is applied:
+```tsx
+<section
+  id="life-grid"
+  style={{
+    width: '100%',
+    paddingTop: '64px',        // clear separation — prevents overlap with hero cards
+    paddingBottom: '48px',
+    paddingLeft: '48px',       // left padding to accommodate decade labels
+    paddingRight: '24px',
+    boxSizing: 'border-box',
+    overflowX: 'auto',         // allow horizontal scroll on very small screens
+  }}
+>
+  <p style={{ textAlign: 'center', ... }}>EACH SQUARE = 1 WEEK OF YOUR LIFE</p>
+
+  {/* Canvas wrapper — centered */}
+  <div style={{
+    position: 'relative',
+    display: 'block',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    width: 'fit-content',
+    maxWidth: '100%',
+  }}>
+    <canvas ref={canvasRef} />
+    {/* decade label spans and coffin emoji overlay here */}
+  </div>
+</section>
+```
+
+Also in LifeGrid.tsx, when computing canvas display width:
+  Use the section's inner width minus paddingLeft/paddingRight as the available width,
+  NOT window.innerWidth. Pass it via a ref or ResizeObserver on the section element.
+  This prevents the canvas from being wider than its container and overflowing.
+
+```tsx
+// In LifeGrid.tsx — observe actual container width
+const containerRef = useRef<HTMLDivElement>(null);
+const [availableWidth, setAvailableWidth] = useState(800);
+
+useEffect(() => {
+  if (!containerRef.current) return;
+  const ro = new ResizeObserver(entries => {
+    setAvailableWidth(entries[0].contentRect.width);
+  });
+  ro.observe(containerRef.current);
+  return () => ro.disconnect();
+}, []);
+```
+
+Use `availableWidth` (not `window.innerWidth`) everywhere the canvas width is calculated.
+
+---
+
+Output: ✅ Fix 1 (countdown single row), ✅ Fix 2 (chevron in-flow), ✅ Fix 3 (grid separation + centering)
+List all files modified. No other changes.

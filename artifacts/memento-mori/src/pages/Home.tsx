@@ -82,54 +82,69 @@ export default function Home() {
     >
       <ThemeToggle />
 
-      {/* Hero Section — full viewport height, content vertically centered */}
+      {/* Hero Section — full viewport height, flex column; chevron pinned to bottom in-flow */}
       <div
-        className="px-4 w-full max-w-[1200px] mx-auto flex flex-col justify-start"
+        className="px-4 w-full max-w-[1200px] mx-auto"
         style={{
           height: 'calc(var(--dvh, 1dvh) * 100)',
           minHeight: '-webkit-fill-available',
-          position: 'relative',
-          paddingTop: 'clamp(48px, 8vh, 80px)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          paddingTop: 'clamp(40px, 7vh, 72px)',
+          paddingBottom: '28px',
+          boxSizing: 'border-box',
         }}
       >
-        <div className="text-center" style={{ marginBottom: '56px' }}>
-          <h1 className="font-bold font-mono tracking-tighter" style={{ fontSize: 'clamp(64px, 10vw, 120px)', marginBottom: '8px' }}>
-            MEMENTO MORI
-          </h1>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 'clamp(28px, 4vw, 48px)', opacity: 0.85 }}>
-            Remember death
-          </p>
+        {/* Main content block — grows to fill space, content vertically centered */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+          <div className="text-center" style={{ marginBottom: '56px' }}>
+            <h1 className="font-bold font-mono tracking-tighter" style={{ fontSize: 'clamp(64px, 10vw, 120px)', marginBottom: '8px' }}>
+              MEMENTO MORI
+            </h1>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 'clamp(28px, 4vw, 48px)', opacity: 0.85 }}>
+              Remember death
+            </p>
+          </div>
+
+          <Countdown
+            currentAge={state.currentAge}
+            lifeExpectancy={lifeExpectancy}
+            freeHoursRemaining={stats.freeHoursRemaining}
+          />
         </div>
 
-        <Countdown
-          currentAge={state.currentAge}
-          lifeExpectancy={lifeExpectancy}
-          freeHoursRemaining={stats.freeHoursRemaining}
-        />
-
-        {/* Animated scroll indicator */}
+        {/* Animated scroll indicator — in flow, always at bottom */}
         <button
           onClick={() => document.getElementById('life-grid')?.scrollIntoView({ behavior: 'smooth' })}
           aria-label="Scroll to grid"
           style={{
-            position: 'absolute',
-            bottom: '32px',
-            left: '50%',
-            transform: 'translateX(-50%)',
             background: 'none',
             border: 'none',
             cursor: 'pointer',
             opacity: 0.6,
-            padding: 0,
+            padding: '8px',
             color: 'inherit',
+            flexShrink: 0,
           }}
         >
           <ChevronDown size={28} className="animate-scroll-bounce" />
         </button>
       </div>
 
-      {/* Grid Section */}
-      <div id="life-grid" className="w-full max-w-[1400px] mx-auto px-4 mb-20">
+      {/* Grid Section — clear separation from hero */}
+      <div
+        id="life-grid"
+        className="w-full max-w-[1400px] mx-auto"
+        style={{
+          paddingTop: '64px',
+          paddingBottom: '48px',
+          paddingLeft: '48px',
+          paddingRight: '24px',
+          boxSizing: 'border-box',
+          overflowX: 'auto',
+        }}
+      >
         <LifeGrid state={state} lifeExpectancy={lifeExpectancy} />
       </div>
 

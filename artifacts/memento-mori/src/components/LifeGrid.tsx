@@ -23,8 +23,19 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
   const [emojiPositions, setEmojiPositions] = useState<EmojiPositions | null>(null);
   const [decadeLabels, setDecadeLabels] = useState<DecadeLabel[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [availableWidth, setAvailableWidth] = useState(800);
 
   const LABEL_COL_WIDTH = 40; // px reserved to the left of the canvas for HTML labels
+
+  // Observe the actual container width so the canvas never overflows its section
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver(entries => {
+      setAvailableWidth(entries[0].contentRect.width);
+    });
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
 
   const totalWeeks = Math.ceil(lifeExpectancy * 52);
   const currentWeek = Math.floor(state.currentAge * 52);
@@ -189,8 +200,8 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
     };
 
     const setup = () => {
-      const fullWidth = containerRef.current?.clientWidth || 800;
-      const isMobile  = window.innerWidth < 640;
+      const fullWidth = availableWidth;
+      const isMobile  = availableWidth < 640;
       sqSize      = isMobile ? 5 : 9;
       const gap   = 2;
       totalSqWidth = sqSize + gap;
@@ -246,12 +257,6 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
       rafId = requestAnimationFrame(animatePulse);
     }
 
-    let resizeTimer: ReturnType<typeof setTimeout>;
-    const handleResize = () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(setup, 150);
-    };
-
     const handleMouseMove = (e: MouseEvent) => {
       const rect   = canvas.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
@@ -286,16 +291,13 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
 
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseleave', handleMouseLeave);
-    window.addEventListener('resize', handleResize);
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
-      clearTimeout(resizeTimer);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
-      window.removeEventListener('resize', handleResize);
     };
-  }, [squares, totalWeeks, currentWeek]);
+  }, [squares, totalWeeks, currentWeek, availableWidth]);
 
   const labelStyle: React.CSSProperties = {
     position: 'absolute',
