@@ -1,0 +1,101 @@
+Visual and layout improvements only. Do not change calculation logic or the grid.
+
+---
+
+CHANGE 1 — HERO SECTION: FULL VIEWPORT HEIGHT
+
+The hero section (title, subtitle, countdown, Free Years card, Free Saturdays card) must fill exactly
+the full viewport height (height: 100vh) with content centered vertically.
+
+Layout within hero:
+- Vertically centered in the viewport using flexbox column with justify-content: center
+- Order from top to bottom: Title → Subtitle → Countdown → [two cards side by side] → scroll indicator
+
+At the very bottom of the hero (position: absolute, bottom: 32px, left: 50%, transform: translateX(-50%)):
+Add an animated scroll-down indicator:
+- Use a ChevronDown icon from lucide-react (size 28px)
+- Animate it with CSS: bounce up and down indefinitely (keyframes: translateY 0 → 8px → 0, 1.5s ease-in-out infinite)
+- Opacity: 0.6
+- Make it a <button> element (no border, no background) so it's clickable
+- On click: smooth-scroll to the grid section using `document.getElementById('life-grid').scrollIntoView({ behavior: 'smooth' })`
+- Add id="life-grid" to the div wrapping the canvas grid
+
+---
+
+CHANGE 2 — SUBTITLE COPY AND SIZE
+
+Change the subtitle text from whatever it currently is to exactly: "Remember death."
+Style: Cormorant Garamond italic (already loaded), increase size to 28px (up from 22px), opacity: 0.85.
+Keep centered, keep the muted style — but it should be clearly legible, not whispered.
+
+---
+
+CHANGE 3 — STAT CARDS: ADD "HOURS" + REMOVE REDUNDANT LINE
+
+In each stat card in StatsPanel.tsx, make two changes:
+
+A) After the large colored number, add the word "hours" in smaller text (18px, same color, 70% opacity):
+   Example: "236,390 hours" — the word "hours" sits inline after the number, slightly smaller.
+   Apply to: Sleeping, Working, In School, Eating & Cooking, Grooming, Chores, Commuting,
+   Social Media, Passive TV, Streaming.
+   Do NOT add "hours" to Total Taken, Free Days, Free Years, Free Weeks, % Life That's Yours.
+
+B) Remove the secondary line that shows "[category name] · [X,XXX] hrs" — it is redundant
+   since the number already shows the hours.
+   Keep ONLY the perspective/comparison line.
+   Example for Sleeping: remove "Sleeping · 236,390 hrs", keep "236,390 years unconscious" → "26.9 years unconscious"
+   Example for Social Media: remove "Social Media · 67,962 hrs", keep the books and languages lines.
+
+---
+
+CHANGE 4 — EMOJI ICONS: REPLACE CANVAS EMOJIS WITH POSITIONED HTML ELEMENTS
+
+The baby (👶) and skull (☠️) emojis drawn via ctx.fillText() on the canvas are rendering
+pixelated/blurry on high-DPI screens. Replace them with absolutely positioned HTML elements
+overlaid on the canvas using a wrapper div with position: relative.
+
+Implementation:
+- Wrap the <canvas> in a <div style={{ position: 'relative' }}>
+- Calculate the pixel position of the first square (top-left corner of square 0) and the last square
+  (bottom-right of last square) using the same coordinate math as the canvas draw
+- Render two <span> elements positioned absolutely:
+  - Baby: position top-left of the first square, offset 4px up and 4px left, font-size 16px: 👶
+  - Skull: position to the right of the last square's row end, same vertical position, font-size 16px: ☠️
+- These are HTML elements, not canvas draws — they will be crisp on all screens
+- Remove the ctx.fillText() emoji calls from the canvas draw function
+
+---
+
+CHANGE 5 — DECADE LABELS: FIX FUZZY RENDERING
+
+The decade age labels (10, 20, 30…) drawn on the canvas are blurry.
+Fix by ensuring the canvas is sized for device pixel ratio:
+
+At canvas initialization:
+```js
+const dpr = window.devicePixelRatio || 1;
+canvas.width = displayWidth * dpr;
+canvas.height = displayHeight * dpr;
+canvas.style.width = displayWidth + 'px';
+canvas.style.height = displayHeight + 'px';
+ctx.scale(dpr, dpr);
+```
+
+Also for the decade labels specifically:
+- Use `ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif'` (system font renders crisper than generic sans-serif)
+- Add `ctx.imageSmoothingEnabled = false`
+- Use `Math.round()` on ALL text x/y coordinates before calling ctx.fillText()
+
+---
+
+CHANGE 6 — SQUARE SIZE: INCREASE TO 9×9px
+
+Change SQUARE_SIZE from 7 to 9 (integer) and GAP from 2 to 2 (keep gap).
+This increases each square to 9×9px with a 2px gap = 11px per square.
+The canvas width calculation must update accordingly.
+The tooltip coordinate math (mousemove → square index) must also update to use the new size+gap = 11.
+
+---
+
+Output one ✅ per change. List all files modified at the end.
+Do not change any calculation logic, the StepperSlider component, or the grid color logic.
