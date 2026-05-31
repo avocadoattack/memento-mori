@@ -203,8 +203,11 @@ export default function Home() {
           </div>
 
           <div className="border-t border-foreground/10 pt-6 text-center">
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '16px', opacity: 0.55 }}>
-              Built with real data. Use your time wisely.
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '16px', opacity: 0.55, maxWidth: '600px', margin: '0 auto', lineHeight: 1.5 }}>
+              It is not that we have a short time to live, but that we waste a lot of it. Life is long enough, and a sufficiently generous amount has been given to us for the highest achievements if it were all well invested.
+            </p>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '14px', opacity: 0.45, marginTop: '12px' }}>
+              — Seneca
             </p>
           </div>
         </div>
