@@ -81,7 +81,6 @@ export default function Home() {
       style={{ opacity: appVisible ? 1 : 0, transition: 'opacity 0.5s ease' }}
     >
       <ThemeToggle />
-
       {/* Hero Section — full viewport height, flex column; chevron pinned to bottom in-flow */}
       <div
         className="px-4 w-full max-w-[1200px] mx-auto"
@@ -132,7 +131,6 @@ export default function Home() {
           <ChevronDown size={28} className="animate-scroll-bounce" />
         </button>
       </div>
-
       {/* Grid Section — clear separation from hero */}
       <div
         id="life-grid"
@@ -148,7 +146,6 @@ export default function Home() {
       >
         <LifeGrid state={state} lifeExpectancy={lifeExpectancy} />
       </div>
-
       {/* Two Column Layout */}
       <div className="max-w-[1400px] mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-12 mb-20">
         <div className="lg:col-span-7">
@@ -158,16 +155,15 @@ export default function Home() {
           <ControlsPanel state={state} lifeExpectancy={lifeExpectancy} />
         </div>
       </div>
-
       {/* Footer */}
       <footer style={{ backgroundColor: 'var(--footer-bg)', padding: '40px 60px' }}>
         <div className="max-w-[1400px] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-8">
             {/* Left column */}
             <div style={{ fontSize: '13px', opacity: 0.6, lineHeight: 1.7 }}>
-              <p className="font-bold mb-1">Memento Mori: Time Audit</p>
+              <p className="font-bold mb-1">Memento Mori — Time Audit</p>
               <p>All calculations are estimates based on population averages.</p>
-              <p>Your individual experience will vary.</p>
+              <p>Your individual experience will vary; and, hopefully, for the better.</p>
             </div>
 
             {/* Right column */}
