@@ -1,0 +1,46 @@
+# Life Grid — Decade Label Redesign
+
+## Context (carry forward)
+- Stack: React + Vite + TypeScript, Tailwind CSS, HTML5 Canvas 2D for the life grid
+- File to edit: `src/components/LifeGrid.tsx`
+- Decade labels are currently HTML `<span>` elements positioned to the LEFT of the canvas — keep them on the left
+- Column count is computed via `ResizeObserver` on the container and forced to a divisor of 520
+- Grid currently groups by 10-year blocks; labels currently sit at the top boundary of each group
+- NEVER use DOM nodes for the grid squares — canvas only
+- NEVER use `window.innerWidth` for sizing — ResizeObserver only
+
+---
+
+## What to Change
+
+Redesign the decade label system in `LifeGrid.tsx` to match this convention:
+
+### New label rules
+1. **Group by 5-year blocks** instead of 10-year blocks. Each group = exactly 5 years of rows (i.e., 260 weeks = 5 × 52).
+2. **Labels are placed at the BOTTOM EDGE of their group** — the label for a 5-year block sits vertically aligned with the LAST row of that block, not the first.
+3. **Labels read: 5, 10, 15, 20 … up to the life expectancy value.** No label at the very top (no "0" or blank).
+4. **The final label = the life expectancy value** (e.g., "76" or "81.4" rounded to nearest integer), placed at the bottom edge of the last row of the grid — even if that final block is partial (fewer than 5 years).
+5. Labels remain as **HTML `<span>` elements on the LEFT side** of the canvas (no change to which side).
+6. Each label is **vertically centered on the last row of its 5-year group** using the same mid-row calculation pattern already in use, adapted for 5-year grouping.
+
+### Column count constraint update
+- The column count must now be a divisor of **260** (52 weeks × 5 years) instead of 520, so that every 5-year group contains exactly equal rows.
+- Keep the existing `ResizeObserver`-based width calculation — just update the divisor pool to factors of 260 (e.g., 52, 26, 20, 13, 10, 5, 4, 2, 1 — pick the largest that fits the container width given square size + gap).
+
+### What NOT to change
+- Canvas rendering logic (squares, red X on past weeks, pulse on current week, tooltip)
+- Color scheme (two-color only: warm beige #D4CCBD light / #2A2A2A dark, red X via ctx.stroke rgba 210,40,40,0.55)
+- Label font, color, or styling — only update their count, value, and vertical positioning
+- The coffin emoji ⚰️ HTML overlay at the end of the last row
+- Anything outside `LifeGrid.tsx`
+
+---
+
+## Success Criteria
+- Labels read 5, 10, 15 … [lifeExpectancy rounded] going downward on the left
+- Each label aligns with the bottom row of its 5-year block
+- No label appears above the first row
+- The last label equals the rounded life expectancy and sits at the last row of the grid
+- Partial final block (if life expectancy is not a multiple of 5) still gets its label at its last row
+- No visual regression on the grid squares, X marks, current-week pulse, or tooltip
+- Grid redraws correctly on container resize
