@@ -209,16 +209,26 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
 
       drawAllStatic();
 
-      // Decade labels: age 10, 20, 30 … each centered vertically in its 10-row block
+      // 5-year labels: 5, 10, 15 … each vertically centered on the last row of its block
       const labels: DecadeLabel[] = [];
-      for (let d = 10; d <= 80; d += 10) {
-        if (d >= rowsCount) break;
-        // center of rows d … d+9
-        const topY = getRowY(d);
-        const botY = getRowY(Math.min(d + 10, rowsCount));
-        const centerY = Math.round((topY + botY) / 2) - Math.round(sqSize / 2);
-        labels.push({ decade: d, y: centerY });
+      const roundedLE = Math.round(lifeExpectancy);
+
+      for (let age = 5; age < lifeExpectancy; age += 5) {
+        const lastRow = age - 1; // last row (0-indexed) of this 5-year block
+        if (lastRow >= rowsCount) break;
+        const y = Math.round(getRowY(lastRow) + sqSize / 2) - 6;
+        labels.push({ decade: age, y });
       }
+
+      // Final label = rounded life expectancy at the very last row of the grid
+      const finalLastRow = rowsCount - 1;
+      const finalY = Math.round(getRowY(finalLastRow) + sqSize / 2) - 6;
+      // Remove last regular label if it would duplicate the final label value
+      if (labels.length > 0 && labels[labels.length - 1].decade === roundedLE) {
+        labels.pop();
+      }
+      labels.push({ decade: roundedLE, y: finalY });
+
       setDecadeLabels(labels);
 
       // Coffin emoji: to the right of the last square
