@@ -167,7 +167,7 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
           Total education time: {Math.round(eduTotalHours).toLocaleString()} instruction hours across {eduCalendarYears} calendar years
         </div>
 
-        <SectionTitle icon={Coffee}>Daily Habits (Hours/Day)</SectionTitle>
+        <SectionTitle icon={Coffee}>Daily Habits</SectionTitle>
         <ControlRow name="eatingHoursPerDay" label="Eating & Prep" value={state.eatingHoursPerDay} min={0.5} max={4} step={0.1} onChange={state.setEatingHoursPerDay} color="var(--cat-eating)" tooltip="US avg ~67min eating + ~30min food prep" unit="h/day" />
         <ControlRow name="groomingHoursPerDay" label="Grooming & Hygiene" value={state.groomingHoursPerDay} min={0.25} max={2} step={0.1} onChange={state.setGroomingHoursPerDay} color="var(--cat-grooming)" tooltip="Source: BLS ATUS + Euromonitor · Male avg: ~35 min/day · Female avg: ~60 min/day" unit="h/day" />
         <ControlRow name="choresHoursPerDay" label="Household Chores" value={state.choresHoursPerDay} min={0} max={4} step={0.1} onChange={state.setChoresHoursPerDay} color="var(--cat-chores)" tooltip="BLS American Time Use Survey avg: ~1.5h/day" unit="h/day" />

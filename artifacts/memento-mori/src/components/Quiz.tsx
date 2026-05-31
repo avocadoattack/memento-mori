@@ -275,7 +275,7 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
                 })}
               </div>
 
-              <GroupTitle>Daily Habits (Hours/Day)</GroupTitle>
+              <GroupTitle>Daily Habits</GroupTitle>
               <AdvancedRow name="eatingHoursPerDay" label="Eating & Prep" value={state.eatingHoursPerDay} min={0.5} max={4} step={0.1} onChange={state.setEatingHoursPerDay} color="var(--cat-eating)" unit="h/day" />
               <AdvancedRow name="groomingHoursPerDay" label="Grooming & Hygiene" value={state.groomingHoursPerDay} min={0.25} max={2} step={0.1} onChange={state.setGroomingHoursPerDay} color="var(--cat-grooming)" unit="h/day" />
               <AdvancedRow name="choresHoursPerDay" label="Household Chores" value={state.choresHoursPerDay} min={0} max={4} step={0.1} onChange={state.setChoresHoursPerDay} color="var(--cat-chores)" unit="h/day" />
