@@ -239,12 +239,19 @@ export function useLifeCalc() {
     const tvYearsLost          = tvHours_total          / 8760;
     const streamingYearsLost   = streamingHours_total   / 8760;
 
+    const sleepPctOfLife       = sleepHoursPerNight / 24 * 100;
+    const workMonths           = workHours_total / 8760 * 12;
+    const schoolProjects       = Math.floor(schoolHours_total / 100);
+    const podcastsFromCommute  = Math.floor(commuteHours_total / 2);
+    const languagesFluent      = Math.floor(streamingHours_total / 1200);
+
     return {
       totalLifeHours, sleepHours_total, workHours_total, schoolHours_total, schoolCalendarYears,
       eatingHours_total, groomingHours_total, choresHours_total, commuteHours_total,
       socialMediaHours_total, tvHours_total, streamingHours_total,
       totalTaken, freeHours, freeHoursRemaining, freeYears, freeWeeks, freeMonths, pctLifeYours,
       pctLifeBehind, socialMediaYearsLost, tvYearsLost, streamingYearsLost,
+      sleepPctOfLife, workMonths, schoolProjects, podcastsFromCommute, languagesFluent,
     };
   }, [
     lifeExpectancy, currentAge, sleepHoursPerNight, workHoursPerWeek,

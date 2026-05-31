@@ -107,23 +107,22 @@ export function StatsPanel({ stats }: Props) {
         <StatCard
           title="Sleeping — cumulative lifetime" value={stats.sleepHours_total / 8760} color="var(--cat-sleep)"
           unit="yrs"
-          perspectiveLine={`${Math.round(stats.sleepHours_total / 24).toLocaleString()} days spent unconscious`}
+          perspectiveLine={`${stats.sleepPctOfLife.toFixed(1)}% of your life you're unconscious`}
         />
         <StatCard
           title="Working — cumulative lifetime" value={stats.workHours_total / 8760} color="var(--cat-work)"
           unit="yrs"
-          perspectiveLine={`${Math.round(stats.workHours_total / 2080)} full-time work-years (at 2,080h/yr)`}
-          secondaryPerspective={`That's ${(stats.workHours_total / (2080 * 40)).toFixed(1)} entire careers' worth of time`}
+          perspectiveLine={`${stats.workMonths.toFixed(1)} months of your life traded for a paycheck`}
         />
         <StatCard
-          title={`In School — ${stats.schoolCalendarYears ?? 0} calendar years`} value={stats.schoolCalendarYears ?? 0} color="var(--cat-school)"
+          title="School — cumulative lifetime" value={stats.schoolHours_total / 8760} color="var(--cat-school)"
           unit="yrs"
-          perspectiveLine={`${(stats.schoolHours_total / 3500).toFixed(1)} PhD programs worth of study time (PhD ≈ 3,500 hrs)`}
+          perspectiveLine={`${stats.schoolProjects.toLocaleString()} major 100-hour projects completed`}
         />
         <StatCard
           title="Eating & Cooking — cumulative lifetime" value={stats.eatingHours_total / 8760} color="var(--cat-eating)"
           unit="yrs"
-          perspectiveLine={`${Math.round(stats.eatingHours_total / 24).toLocaleString()} days spent at the table`}
+          perspectiveLine={`${Math.round(stats.eatingHours_total / 24).toLocaleString()} days spent sitting at the table`}
         />
         <StatCard
           title="Grooming — cumulative lifetime" value={stats.groomingHours_total / 8760} color="var(--cat-grooming)"
@@ -133,30 +132,27 @@ export function StatsPanel({ stats }: Props) {
         <StatCard
           title="Chores — cumulative lifetime" value={stats.choresHours_total / 8760} color="var(--cat-chores)"
           unit="yrs"
-          perspectiveLine={`${Math.round(stats.choresHours_total / 24).toLocaleString()} days of domestic labor`}
+          perspectiveLine={`${Math.round(stats.choresHours_total / 24).toLocaleString()} days spent fighting household entropy`}
         />
         <StatCard
           title="Commuting — cumulative lifetime" value={stats.commuteHours_total / 8760} color="var(--cat-commute)"
           unit="yrs"
-          perspectiveLine={`${Math.round(stats.commuteHours_total / 40).toLocaleString()} round trips from New York to Los Angeles by car`}
+          perspectiveLine={`${stats.podcastsFromCommute.toLocaleString()} long-form, educational podcasts you could've listened to`}
         />
         <StatCard
           title="Social Media — cumulative lifetime" value={stats.socialMediaHours_total / 8760} color="var(--cat-social)"
           unit="yrs"
           perspectiveLine={`${Math.round(stats.socialMediaHours_total / 6).toLocaleString()} books you could have read`}
-          secondaryPerspective={`Or ${Math.round(stats.socialMediaHours_total / 700).toLocaleString()} languages learned to conversational level`}
         />
         <StatCard
           title="Passive TV — cumulative lifetime" value={stats.tvHours_total / 8760} color="var(--cat-tv)"
           unit="yrs"
-          perspectiveLine={`${Math.round(stats.tvHours_total).toLocaleString()} gym sessions you could have done`}
-          secondaryPerspective={`Or ${Math.round(stats.tvHours_total / 49).toLocaleString()} complete rewatches of Breaking Bad`}
+          perspectiveLine={`${Math.round(stats.tvHours_total).toLocaleString()} gym visits you could've done`}
         />
         <StatCard
           title="Streaming — cumulative lifetime" value={stats.streamingHours_total / 8760} color="var(--cat-streaming)"
           unit="yrs"
-          perspectiveLine={`${Math.round(stats.streamingHours_total / 30).toLocaleString()} complete Netflix series binged`}
-          secondaryPerspective={`That's ${(stats.streamingYearsLost).toFixed(1)} years of your life on SVOD`}
+          perspectiveLine={`${stats.languagesFluent.toLocaleString()} languages learned to fluent level`}
         />
       </div>
 

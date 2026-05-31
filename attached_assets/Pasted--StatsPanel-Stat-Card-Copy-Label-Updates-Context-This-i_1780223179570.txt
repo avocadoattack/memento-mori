@@ -1,0 +1,128 @@
+# StatsPanel — Stat Card Copy & Label Updates
+
+## Context
+
+This is `src/components/StatsPanel.tsx`. Make the following targeted changes to stat card labels, sublabels, and perspective/comparison phrases. Do **not** touch layout, styling, color tokens, the stacked bar, or any other component. Do **not** move any calculation logic out of `useLifeCalc.ts`.
+
+---
+
+## Changes Required
+
+### 1. Sleeping Card
+
+**Current:** `X days spent unconscious`  
+**New:** `X% of your life you're unconscious`
+
+**Calculation:** `(sleepHoursPerNight / 24 * 100).toFixed(1)` — this is the fixed daily fraction, no lifetime total needed. Display as e.g. `"33.3% of your life you're unconscious"`.
+
+---
+
+### 2. Working Card
+
+**Current sublabel:** `CUMULATIVE LIFETIME` ✓ (keep)  
+**Current perspective phrase:** `X full-time work-years (at 2,080h/yr)` + small subtitle `"That's 1.1 entire careers' worth of time"`
+
+**New perspective phrase:** `X months of your life traded for a paycheck`  
+**Remove:** The small italic/muted subtitle line entirely ("That's 1.1 entire careers..."). No replacement.
+
+**Calculation for months:** `(workHoursTotal / 8760 * 12).toFixed(1)` → display as e.g. `"122.4 months of your life traded for a paycheck"`
+
+---
+
+### 3. In School Card
+
+**Current card title:** `IN SCHOOL` → **New card title:** `SCHOOL`  
+**Current sublabel:** `13 CALENDAR YEARS` → **New sublabel:** `CUMULATIVE LIFETIME` (same uppercase style as every other card)  
+**Current stat shown (yrs number):** was calendar years sum → **New stat:** cumulative lifetime years = `(schoolHoursTotalInstructions / 8760).toFixed(1)` yrs — same pattern as every other card  
+
+**Current perspective phrase:** `X.X PhD programs worth of study time (PhD ≈ 3,500 hrs)`  
+**New perspective phrase:** `X major 100-hour projects completed`  
+**Calculation:** `Math.floor(schoolHoursTotalInstructions / 100)` — where `schoolHoursTotalInstructions` is the sum of instruction hours for all active education levels (already computed in `useLifeCalc.ts`; do not duplicate logic, just use the existing value)
+
+> Note: The yrs display now follows the same formula as every other card (`rawHours / 8760`). The old "calendar years" display (sum of `.years` from active levels) was specific to this card — replace it with the standard cumulative hours formula. The card title and sublabel must also match the other cards' style exactly.
+
+---
+
+### 4. Eating & Cooking Card
+
+**Current perspective phrase:** `X,XXX days spent at the table`  
+**New perspective phrase:** `X,XXX days spent sitting at the table`
+
+*(Minor wording tweak only — calculation unchanged: `Math.floor(eatingHoursTotal / 24)`)*
+
+---
+
+### 5. Chores Card
+
+**Current perspective phrase:** `X,XXX days of domestic labor`  
+**New perspective phrase:** `X,XXX days spent fighting household entropy`
+
+*(Calculation unchanged: `Math.floor(choresHoursTotal / 24)`)*
+
+---
+
+### 6. Commuting Card
+
+**Current perspective phrase:** `X round trips from New York to Los Angeles by car`  
+**New perspective phrase:** `X long-form, educational podcasts you could've listened to`
+
+**Calculation:** `Math.floor(commuteHoursTotal / 2)` — using a 2-hour average episode length for long-form educational podcasts (e.g. Lex Fridman, Huberman Lab, Acquired).
+
+---
+
+### 7. Social Media Card
+
+**Current layout:** bold main phrase + small muted subtitle ("Or X languages learned to conversational level")  
+**Change:** Remove the small subtitle entirely. Keep only the bold main phrase (`X,XXX books you could have read`).  
+**Calculation for books unchanged:** `Math.floor(socialMediaHoursTotal / 6)` (avg ~6h per book)
+
+---
+
+### 8. Passive TV Card
+
+**Current perspective phrase:** `X gym sessions you could have done`  
+**New perspective phrase:** `X gym visits you could've done`
+
+**Current small subtitle:** `Or X,XXX complete rewatches of Breaking Bad`  
+**Remove:** The subtitle entirely. No replacement.
+
+**Calculation for gym visits unchanged:** `Math.floor(tvHoursTotal / 1)` — 1 hour per gym session (or whatever the existing divisor is; do not change the divisor, only change the display text)
+
+---
+
+### 9. Streaming Card
+
+**Current perspective phrase:** `X,XXX complete Netflix series binged`  
+**New perspective phrase:** `X languages learned to fluent level`
+
+**Current small subtitle:** `"That's X.X years of your life on SVOD"`  
+**Remove:** The subtitle entirely. No replacement.
+
+**Calculation — new:**  
+`Math.floor(streamingHoursTotal / 1200)`  
+Using 1,200 hours as the fluency benchmark (aligns with FSI research: ~600–750h for Category I languages to professional working proficiency, ~1,200–1,500h for Category III/IV — 1,200h is a defensible midpoint for general "fluent" across a mix of language difficulties).
+
+---
+
+## Summary of Calculation Changes
+
+| Card | Old calc | New calc |
+|---|---|---|
+| Sleeping perspective | `rawHours / 24` (days) | `sleepHoursPerNight / 24 * 100` (%) |
+| Working perspective | `workHours / 2080` (work-years) | `workHoursTotal / 8760 * 12` (months) |
+| School stat (yrs) | sum of `.years` from active levels | `schoolHoursTotalInstructions / 8760` |
+| School perspective | `schoolHours / 3500` (PhD programs) | `schoolHoursTotalInstructions / 100` (100h projects) |
+| Commute perspective | `commuteHours / 40` (NY→LA trips) | `commuteHoursTotal / 2` (podcasts) |
+| Streaming perspective | `streamingHours / 30` (Netflix series) | `streamingHoursTotal / 1200` (languages fluent) |
+
+All other calculations (eating days, chores days, gym visits, books) remain unchanged — only the display text is being updated for those.
+
+---
+
+## Hard Rules (do not violate)
+
+- All calculation logic lives in `useLifeCalc.ts` — if any new derived values are needed (e.g. `sleepPercentOfLife`, `workMonths`, `podcastsFromCommute`, `languagesFluent`), add them there and export them. Do not compute them inline in `StatsPanel.tsx`.
+- Do not change any other cards (Grooming, Free Days, Free Years, Free Saturdays, % Life That's Yours, Total Taken).
+- Do not touch the stacked bar or its tooltip logic.
+- Do not change card colors, borders, layout, or typography.
+- No new dependencies.
