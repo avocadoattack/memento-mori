@@ -6,7 +6,7 @@ interface StepperSliderProps {
   value: number;
   min: number;
   max: number;
-  step: number;
+  step?: number;
   onChange: (value: number) => void;
   label: string;
   sublabel?: string;
@@ -18,7 +18,7 @@ interface StepperSliderProps {
 }
 
 export function StepperSlider({
-  value, min, max, step, onChange,
+  value, min, max, step = 0.1, onChange,
   label, sublabel, isAutoDefault, isModified,
   categoryColor = 'var(--accent)', tooltip, unit,
 }: StepperSliderProps) {
@@ -35,7 +35,8 @@ export function StepperSlider({
   const snap  = (v: number) => parseFloat((Math.round(v / step) * step).toFixed(10));
 
   const applyStep = useCallback((direction: 1 | -1) => {
-    onChange(Math.min(max, Math.max(min, parseFloat((value + direction * step).toFixed(10)))));
+    const raw = value + direction * step;
+    onChange(Math.min(max, Math.max(min, Math.round(raw * 10) / 10)));
   }, [value, step, min, max, onChange]);
 
   const stopHold = useCallback(() => {

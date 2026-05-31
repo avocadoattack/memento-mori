@@ -1,0 +1,56 @@
+# Fix: Standardize StepperSlider Step Size to 0.1 Sitewide
+
+## Context (carry forward)
+
+- Stack: React + Vite (TypeScript), Tailwind CSS, no GSAP, no `<input type="range">`
+- `StepperSlider` is the ONLY slider component used sitewide — it replaced broken native range inputs
+- All parameter values are in hours/day (or hours/night for sleep, hours/week for work)
+- Do NOT touch calculation logic in `useLifeCalc.ts`
+- Do NOT add features or refactor beyond what is asked
+
+---
+
+## Problem
+
+The `StepperSlider` component currently uses inconsistent step sizes across different parameters. For example:
+
+- Social Media & Doomscrolling steps from 2.5 → 2.8 (0.3 step)
+- Streaming steps from 2.0 → 2.3 → 2.5 (irregular steps)
+
+All `+` and `−` buttons must increment/decrement by exactly **0.1** — no exceptions.
+
+---
+
+## Task
+
+**In `src/components/StepperSlider.tsx`:**
+
+1. Find the increment/decrement logic triggered by the `+` and `−` buttons (including the hold-to-repeat logic that fires after 450ms then every 180ms)
+2. Change the step size to `0.1` as the **universal default**
+3. To avoid floating point drift (e.g. `2.1000000000000001`), wrap every value update with: `Math.round(newValue * 10) / 10`
+4. If `StepperSlider` accepts a `step` prop, set its default value to `0.1` — but do NOT break any callers that pass an explicit `step` prop
+
+**In every file that renders `<StepperSlider>` (check `ControlsPanel.tsx` and any other component that uses it):**
+
+5. Audit every `StepperSlider` instance for an explicit `step` prop
+6. Remove or update any `step` prop values that are not `0.1` — unless the parameter is intentionally non-decimal (e.g. work hours/week which may use whole numbers — leave those alone if they have a specific step set)
+7. Do NOT change `min`, `max`, `value`, `onChange`, or any other props
+
+---
+
+## Constraints
+
+- MUST NOT modify `useLifeCalc.ts`
+- MUST NOT modify `index.css`, `LifeGrid.tsx`, `Countdown.tsx`, `Quiz.tsx`, or `Home.tsx`
+- MUST NOT add GSAP, `<input type="range">`, or any new dependencies
+- MUST NOT change the hold-to-repeat timing (450ms delay, 180ms repeat interval)
+- Only touch: `StepperSlider.tsx` and any component files that pass a `step` prop to `StepperSlider`
+
+---
+
+## Success Criteria
+
+- Every `+` / `−` button on every parameter (Sleep, Social Media, TV, Streaming, Eating, Grooming, Chores, Commute, etc.) increments and decrements by exactly `0.1`
+- Values display cleanly to 1 decimal place with no floating point noise (e.g. `2.1` not `2.0999999`)
+- Hold-to-repeat still works correctly at the same timing
+- No regressions on any other slider behavior

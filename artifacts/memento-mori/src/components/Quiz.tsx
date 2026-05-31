@@ -244,7 +244,7 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
               </p>
 
               <GroupTitle>Sleep</GroupTitle>
-              <AdvancedRow name="sleepHoursPerNight" label="Hours per night" value={state.sleepHoursPerNight} min={4} max={12} step={0.5} onChange={state.setSleepHoursPerNight} color="var(--cat-sleep)" unit="h/night" />
+              <AdvancedRow name="sleepHoursPerNight" label="Hours per night" value={state.sleepHoursPerNight} min={4} max={12} step={0.1} onChange={state.setSleepHoursPerNight} color="var(--cat-sleep)" unit="h/night" />
 
               <GroupTitle>Work</GroupTitle>
               <AdvancedRow name="workHoursPerWeek" label="Hours per week" value={state.workHoursPerWeek} min={0} max={80} step={1} onChange={state.setWorkHoursPerWeek} color="var(--cat-work)" unit="h/week" />
@@ -276,17 +276,17 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
               </div>
 
               <GroupTitle>Daily Habits (Hours/Day)</GroupTitle>
-              <AdvancedRow name="eatingHoursPerDay" label="Eating & Prep" value={state.eatingHoursPerDay} min={0.5} max={4} step={0.25} onChange={state.setEatingHoursPerDay} color="var(--cat-eating)" unit="h/day" />
-              <AdvancedRow name="groomingHoursPerDay" label="Grooming & Hygiene" value={state.groomingHoursPerDay} min={0.25} max={2} step={0.25} onChange={state.setGroomingHoursPerDay} color="var(--cat-grooming)" unit="h/day" />
-              <AdvancedRow name="choresHoursPerDay" label="Household Chores" value={state.choresHoursPerDay} min={0} max={4} step={0.25} onChange={state.setChoresHoursPerDay} color="var(--cat-chores)" unit="h/day" />
+              <AdvancedRow name="eatingHoursPerDay" label="Eating & Prep" value={state.eatingHoursPerDay} min={0.5} max={4} step={0.1} onChange={state.setEatingHoursPerDay} color="var(--cat-eating)" unit="h/day" />
+              <AdvancedRow name="groomingHoursPerDay" label="Grooming & Hygiene" value={state.groomingHoursPerDay} min={0.25} max={2} step={0.1} onChange={state.setGroomingHoursPerDay} color="var(--cat-grooming)" unit="h/day" />
+              <AdvancedRow name="choresHoursPerDay" label="Household Chores" value={state.choresHoursPerDay} min={0} max={4} step={0.1} onChange={state.setChoresHoursPerDay} color="var(--cat-chores)" unit="h/day" />
 
               <GroupTitle>Commute</GroupTitle>
-              <AdvancedRow name="commuteHoursPerDay" label="Commuting" value={state.commuteHoursPerDay} min={0} max={4} step={0.25} onChange={state.setCommuteHoursPerDay} color="var(--cat-commute)" unit="h/day" />
+              <AdvancedRow name="commuteHoursPerDay" label="Commuting" value={state.commuteHoursPerDay} min={0} max={4} step={0.1} onChange={state.setCommuteHoursPerDay} color="var(--cat-commute)" unit="h/day" />
 
               <GroupTitle>Time Wasters</GroupTitle>
-              <AdvancedRow name="socialMediaHoursPerDay" label="Social Media & Doomscrolling" value={state.socialMediaHoursPerDay} min={0} max={8} step={0.25} onChange={state.setSocialMediaHoursPerDay} color="var(--cat-social)" unit="h/day" />
-              <AdvancedRow name="tvHoursPerDay" label="Passive TV Watching" value={state.tvHoursPerDay} min={0} max={10} step={0.25} onChange={state.setTvHoursPerDay} color="var(--cat-tv)" unit="h/day" />
-              <AdvancedRow name="streamingHoursPerDay" label="Streaming (Netflix, Hulu, Prime, etc.)" value={state.streamingHoursPerDay} min={0} max={6} step={0.25} onChange={state.setStreamingHoursPerDay} color="var(--cat-streaming)" unit="h/day" />
+              <AdvancedRow name="socialMediaHoursPerDay" label="Social Media & Doomscrolling" value={state.socialMediaHoursPerDay} min={0} max={8} step={0.1} onChange={state.setSocialMediaHoursPerDay} color="var(--cat-social)" unit="h/day" />
+              <AdvancedRow name="tvHoursPerDay" label="Passive TV Watching" value={state.tvHoursPerDay} min={0} max={10} step={0.1} onChange={state.setTvHoursPerDay} color="var(--cat-tv)" unit="h/day" />
+              <AdvancedRow name="streamingHoursPerDay" label="Streaming (Netflix, Hulu, Prime, etc.)" value={state.streamingHoursPerDay} min={0} max={6} step={0.1} onChange={state.setStreamingHoursPerDay} color="var(--cat-streaming)" unit="h/day" />
             </div>
           </div>
         </div>
