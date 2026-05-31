@@ -112,7 +112,7 @@ export function StatsPanel({ stats }: Props) {
         <StatCard
           title="Working — cumulative lifetime" value={stats.workHours_total / 8760} color="var(--cat-work)"
           unit="yrs"
-          perspectiveLine={`${stats.workMonths.toFixed(1)} months of your life traded for a paycheck`}
+          perspectiveLine={`${stats.workMonths.toFixed(1)} months traded for a paycheck`}
         />
         <StatCard
           title="School — cumulative lifetime" value={stats.schoolHours_total / 8760} color="var(--cat-school)"
@@ -132,12 +132,12 @@ export function StatsPanel({ stats }: Props) {
         <StatCard
           title="Chores — cumulative lifetime" value={stats.choresHours_total / 8760} color="var(--cat-chores)"
           unit="yrs"
-          perspectiveLine={`${Math.round(stats.choresHours_total / 24).toLocaleString()} days spent fighting household entropy`}
+          perspectiveLine={`${Math.round(stats.choresHours_total / 24).toLocaleString()} days fighting household entropy`}
         />
         <StatCard
           title="Commuting — cumulative lifetime" value={stats.commuteHours_total / 8760} color="var(--cat-commute)"
           unit="yrs"
-          perspectiveLine={`${stats.podcastsFromCommute.toLocaleString()} long-form, educational podcasts you could've listened to`}
+          perspectiveLine={`${stats.podcastsFromCommute.toLocaleString()} educational podcasts listened to`}
         />
         <StatCard
           title="Social Media — cumulative lifetime" value={stats.socialMediaHours_total / 8760} color="var(--cat-social)"
@@ -147,7 +147,7 @@ export function StatsPanel({ stats }: Props) {
         <StatCard
           title="Passive TV — cumulative lifetime" value={stats.tvHours_total / 8760} color="var(--cat-tv)"
           unit="yrs"
-          perspectiveLine={`${Math.round(stats.tvHours_total).toLocaleString()} gym visits you could've done`}
+          perspectiveLine={`${Math.round(stats.tvHours_total).toLocaleString()} gym sessions you could've done`}
         />
         <StatCard
           title="Streaming — cumulative lifetime" value={stats.streamingHours_total / 8760} color="var(--cat-streaming)"
