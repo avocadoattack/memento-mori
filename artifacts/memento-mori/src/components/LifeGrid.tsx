@@ -290,7 +290,6 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
   const labelStyle: React.CSSProperties = {
     position: 'absolute',
     right: 8,
-    fontSize: '11px',
     fontWeight: 700,
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     lineHeight: 1,
@@ -315,7 +314,7 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
           {/* Decade label column — HTML spans, crisp on all DPR */}
           <div style={{ width: LABEL_WIDTH, position: 'relative', flexShrink: 0, alignSelf: 'stretch' }}>
             {decadeLabels.map(({ decade, y }) => (
-              <span key={decade} style={{ ...labelStyle, top: y }}>{decade}</span>
+              <span key={decade} className="text-[11px] max-md:text-[10px]" style={{ ...labelStyle, top: y }}>{decade}</span>
             ))}
           </div>
 

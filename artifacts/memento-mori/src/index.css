@@ -55,6 +55,11 @@
   }
 }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 /* Custom Slider Styles */
 input[type=range].custom-slider {
   -webkit-appearance: none;

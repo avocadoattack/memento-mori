@@ -201,7 +201,7 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
                 key={g}
                 type="button"
                 onClick={() => handleGender(g)}
-                className={`py-3 text-sm font-bold uppercase tracking-widest border-2 transition-colors ${
+                className={`py-3 max-md:min-h-[44px] text-sm font-bold uppercase tracking-widest border-2 transition-colors ${
                   genderSel === g
                     ? 'bg-foreground text-background border-foreground'
                     : 'bg-transparent border-border text-foreground/60 hover:border-foreground/40'
@@ -296,7 +296,7 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
           type="button"
           disabled={!canSubmit}
           onClick={onComplete}
-          className={`w-full mt-4 py-4 font-bold uppercase tracking-widest text-sm transition-colors ${
+          className={`w-full mt-4 py-4 max-md:min-h-[44px] font-bold uppercase tracking-widest text-sm transition-colors ${
             canSubmit
               ? 'bg-accent text-white hover:opacity-90 cursor-pointer'
               : 'bg-foreground/10 text-foreground/40 cursor-not-allowed'
@@ -309,7 +309,7 @@ export function Quiz({ calc, exiting, onComplete, onSkip }: Props) {
         <button
           type="button"
           onClick={onSkip}
-          className="mx-auto mt-3 transition-opacity hover:opacity-80"
+          className="mx-auto mt-3 max-md:min-h-[44px] transition-opacity hover:opacity-80"
           style={{ fontSize: '12px', opacity: 0.45 }}
         >
           Skip to app →

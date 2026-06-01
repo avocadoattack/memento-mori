@@ -53,7 +53,7 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
     .reduce((sum: number, l: typeof EDUCATION_LEVELS[0]) => sum + l.years, 0);
 
   return (
-    <div className="bg-card border border-border p-5 md:p-6 shadow-sm overflow-hidden h-full flex flex-col">
+    <div className="bg-card border border-border p-5 md:p-6 max-md:p-4 max-md:w-full shadow-sm overflow-hidden h-full flex flex-col">
       <div className="overflow-y-auto pr-2 -mr-2">
         <h2 className="text-xl font-bold font-mono tracking-tight mb-4">PARAMETERS</h2>
 

@@ -104,14 +104,13 @@ export function Countdown({ currentAge, lifeExpectancy, freeHoursRemaining, pctL
       <div className="text-center">
         <h3 className="text-xs font-bold uppercase tracking-widest opacity-60 mb-6">Countdown to Expected Death</h3>
         <div
-          className="text-[var(--accent)] font-mono font-bold tracking-tighter"
+          className="text-[var(--accent)] font-mono font-bold tracking-tighter flex-nowrap max-md:flex-wrap max-md:gap-y-3"
           style={{
             display: 'flex',
             flexDirection: 'row',
-            flexWrap: 'nowrap',
             alignItems: 'flex-end',
             justifyContent: 'center',
-            gap: '0',
+            columnGap: '0',
             width: '100%',
             overflowX: 'visible',
             fontVariantNumeric: 'tabular-nums',
@@ -136,7 +135,7 @@ export function Countdown({ currentAge, lifeExpectancy, freeHoursRemaining, pctL
                     textAlign: 'center',
                     fontVariantNumeric: 'tabular-nums',
                     fontFeatureSettings: '"tnum" 1',
-                    fontSize: 'clamp(28px, 5vw, 64px)',
+                    fontSize: 'clamp(24px, 5vw, 64px)',
                     fontWeight: 700,
                     lineHeight: 1,
                   }}

@@ -71,6 +71,12 @@ export function StatsPanel({ stats }: Props) {
     });
   };
 
+  const onSegClick = (e: React.MouseEvent, name: string, hours: number) => {
+    const pct = ((hours / stats.totalLifeHours) * 100).toFixed(1);
+    const text = `${name} · ${Math.round(hours).toLocaleString()} hrs · ${pct}% of life`;
+    setBarTooltip(prev => (prev && prev.text === text ? null : { x: e.clientX, y: e.clientY, text }));
+  };
+
   return (
     <div>
       {stats.freeHours < 0 && (
@@ -79,7 +85,7 @@ export function StatsPanel({ stats }: Props) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 max-md:grid-cols-2 gap-4 md:gap-6 mb-12">
         <StatCard
           title="FREE MONTHS REMAINING"
           value={stats.freeMonths}
@@ -88,19 +94,19 @@ export function StatsPanel({ stats }: Props) {
           perspectiveLine="Months with no obligations — after everything is subtracted"
         />
 
-        <div className="col-span-1 sm:col-span-2 mb-4">
+        <div className="col-span-1 sm:col-span-2 max-md:col-span-2 mb-4">
           <div className="text-xs font-bold uppercase tracking-widest opacity-50 mb-2">Where Your Life Goes</div>
           <div className="w-full h-6 flex rounded overflow-hidden shadow-sm">
-            <div title="Sleep" className="h-full bg-[var(--cat-sleep)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.sleepHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Sleep', stats.sleepHours_total)} onMouseLeave={() => setBarTooltip(null)} />
-            <div title="Work" className="h-full bg-[var(--cat-work)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.workHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Work', stats.workHours_total)} onMouseLeave={() => setBarTooltip(null)} />
-            <div title="School" className="h-full bg-[var(--cat-school)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.schoolHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'School', stats.schoolHours_total)} onMouseLeave={() => setBarTooltip(null)} />
-            <div title="Eating" className="h-full bg-[var(--cat-eating)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.eatingHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Eating & Cooking', stats.eatingHours_total)} onMouseLeave={() => setBarTooltip(null)} />
-            <div title="Grooming" className="h-full bg-[var(--cat-grooming)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.groomingHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Grooming', stats.groomingHours_total)} onMouseLeave={() => setBarTooltip(null)} />
-            <div title="Chores" className="h-full bg-[var(--cat-chores)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.choresHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Chores', stats.choresHours_total)} onMouseLeave={() => setBarTooltip(null)} />
-            <div title="Commute" className="h-full bg-[var(--cat-commute)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.commuteHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Commuting', stats.commuteHours_total)} onMouseLeave={() => setBarTooltip(null)} />
-            <div title="Social Media" className="h-full bg-[var(--cat-social)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.socialMediaHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Social Media', stats.socialMediaHours_total)} onMouseLeave={() => setBarTooltip(null)} />
-            <div title="TV" className="h-full bg-[var(--cat-tv)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.tvHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Passive TV', stats.tvHours_total)} onMouseLeave={() => setBarTooltip(null)} />
-            <div title="Streaming" className="h-full bg-[var(--cat-streaming)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.streamingHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Streaming', stats.streamingHours_total)} onMouseLeave={() => setBarTooltip(null)} />
+            <div title="Sleep" className="h-full bg-[var(--cat-sleep)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.sleepHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Sleep', stats.sleepHours_total)} onMouseLeave={() => setBarTooltip(null)} onClick={(e) => onSegClick(e, 'Sleep', stats.sleepHours_total)} />
+            <div title="Work" className="h-full bg-[var(--cat-work)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.workHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Work', stats.workHours_total)} onMouseLeave={() => setBarTooltip(null)} onClick={(e) => onSegClick(e, 'Work', stats.workHours_total)} />
+            <div title="School" className="h-full bg-[var(--cat-school)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.schoolHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'School', stats.schoolHours_total)} onMouseLeave={() => setBarTooltip(null)} onClick={(e) => onSegClick(e, 'School', stats.schoolHours_total)} />
+            <div title="Eating" className="h-full bg-[var(--cat-eating)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.eatingHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Eating & Cooking', stats.eatingHours_total)} onMouseLeave={() => setBarTooltip(null)} onClick={(e) => onSegClick(e, 'Eating & Cooking', stats.eatingHours_total)} />
+            <div title="Grooming" className="h-full bg-[var(--cat-grooming)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.groomingHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Grooming', stats.groomingHours_total)} onMouseLeave={() => setBarTooltip(null)} onClick={(e) => onSegClick(e, 'Grooming', stats.groomingHours_total)} />
+            <div title="Chores" className="h-full bg-[var(--cat-chores)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.choresHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Chores', stats.choresHours_total)} onMouseLeave={() => setBarTooltip(null)} onClick={(e) => onSegClick(e, 'Chores', stats.choresHours_total)} />
+            <div title="Commute" className="h-full bg-[var(--cat-commute)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.commuteHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Commuting', stats.commuteHours_total)} onMouseLeave={() => setBarTooltip(null)} onClick={(e) => onSegClick(e, 'Commuting', stats.commuteHours_total)} />
+            <div title="Social Media" className="h-full bg-[var(--cat-social)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.socialMediaHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Social Media', stats.socialMediaHours_total)} onMouseLeave={() => setBarTooltip(null)} onClick={(e) => onSegClick(e, 'Social Media', stats.socialMediaHours_total)} />
+            <div title="TV" className="h-full bg-[var(--cat-tv)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.tvHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Passive TV', stats.tvHours_total)} onMouseLeave={() => setBarTooltip(null)} onClick={(e) => onSegClick(e, 'Passive TV', stats.tvHours_total)} />
+            <div title="Streaming" className="h-full bg-[var(--cat-streaming)] transition-all hover:opacity-80 cursor-pointer" style={{ width: `${(stats.streamingHours_total/stats.totalTaken)*100}%` }} onMouseEnter={(e) => onSegHover(e, 'Streaming', stats.streamingHours_total)} onMouseLeave={() => setBarTooltip(null)} onClick={(e) => onSegClick(e, 'Streaming', stats.streamingHours_total)} />
           </div>
         </div>
 

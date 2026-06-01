@@ -98,7 +98,7 @@ export function StepperSlider({
           />
         ) : (
           <span
-            className="font-mono text-sm font-bold cursor-pointer select-none flex items-baseline gap-1"
+            className="font-mono text-sm font-bold cursor-pointer select-none flex items-baseline gap-1 max-md:min-w-[56px] max-md:justify-end"
             style={{ color: isModified ? categoryColor : undefined, opacity: isModified ? 1 : 0.7 }}
             onClick={startEdit}
             title="Click to type a value"
@@ -111,7 +111,7 @@ export function StepperSlider({
 
       <div className="flex items-center gap-2">
         <button
-          className="flex-none w-8 h-8 flex items-center justify-center rounded font-bold text-base select-none border transition-colors hover:opacity-80 active:scale-95"
+          className="flex-none w-8 h-8 max-md:min-h-[44px] max-md:min-w-[44px] flex items-center justify-center rounded font-bold text-base max-md:text-lg select-none border transition-colors hover:opacity-80 active:scale-95"
           style={{ borderColor: categoryColor, color: categoryColor }}
           onMouseDown={() => startHold(-1)}
           onMouseUp={stopHold}
@@ -128,7 +128,7 @@ export function StepperSlider({
         </div>
 
         <button
-          className="flex-none w-8 h-8 flex items-center justify-center rounded font-bold text-base select-none border transition-colors hover:opacity-80 active:scale-95"
+          className="flex-none w-8 h-8 max-md:min-h-[44px] max-md:min-w-[44px] flex items-center justify-center rounded font-bold text-base max-md:text-lg select-none border transition-colors hover:opacity-80 active:scale-95"
           style={{ borderColor: categoryColor, color: categoryColor }}
           onMouseDown={() => startHold(1)}
           onMouseUp={stopHold}
