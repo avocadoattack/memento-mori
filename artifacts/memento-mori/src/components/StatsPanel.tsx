@@ -1,11 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { countTo } from '../lib/countTo';
+import type { LifeCalcStats } from '../hooks/useLifeCalc';
 
 interface Props {
-  stats: any;
+  stats: LifeCalcStats;
 }
 
-const StatCard = ({ title, value, color, large = false, unit = "", isPercent = false, perspectiveLine = "", secondaryPerspective = "", showHours = false }: any) => {
+interface StatCardProps {
+  title: string;
+  value: number;
+  color: string;
+  large?: boolean;
+  unit?: string;
+  isPercent?: boolean;
+  perspectiveLine?: string;
+  secondaryPerspective?: string;
+  showHours?: boolean;
+}
+
+const StatCard = ({ title, value, color, large = false, unit = "", isPercent = false, perspectiveLine = "", secondaryPerspective = "", showHours = false }: StatCardProps) => {
   const numRef = useRef<HTMLDivElement>(null);
   const prevValue = useRef(value);
 

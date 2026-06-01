@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { EDUCATION_LEVELS } from '../lib/educationLevels';
+import type { LifeCalcState } from '../hooks/useLifeCalc';
 
 interface Props {
-  state: any;
+  state: LifeCalcState;
   lifeExpectancy: number;
 }
 
@@ -51,7 +52,7 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
     const sleepHours       = state.sleepHoursPerNight    * 365.25 * lifeExpectancy;
     const workHours        = state.workHoursPerWeek      * 52     * workYears;
     const schoolHours      = EDUCATION_LEVELS
-      .filter(l => (state.selectedEducationLevels as string[]).includes(l.id))
+      .filter(l => state.selectedEducationLevels.includes(l.id))
       .reduce((sum, l) => sum + l.years * l.daysPerYear * l.hoursPerDay, 0);
     const eatingHours      = state.eatingHoursPerDay     * 365.25 * lifeExpectancy;
     const groomingHours    = state.groomingHoursPerDay   * 365.25 * lifeExpectancy;
@@ -320,7 +321,12 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
 
           {/* Canvas — display:block; no explicit margin needed since flex handles centering */}
           <div style={{ position: 'relative' }}>
-            <canvas ref={canvasRef} className="block cursor-crosshair" />
+            <canvas
+              ref={canvasRef}
+              className="block cursor-crosshair"
+              role="img"
+              aria-label={`Life in weeks grid: ${totalWeeks} total weeks, ${Math.max(0, Math.min(currentWeek, totalWeeks))} weeks already lived`}
+            />
 
             {/* Coffin emoji after last square */}
             {emojiPositions && (

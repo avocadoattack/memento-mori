@@ -1,0 +1,126 @@
+# Memento Mori — Pre-Publish Audit & Cleanup Prompt
+
+## Context (carry forward — do not revert any of these)
+
+This is a React + Vite (TypeScript) SPA. The following decisions are **locked** and MUST NOT be changed under any circumstances:
+
+- **No GSAP** — removed due to severe performance issues with 4,000+ DOM nodes. CSS keyframes + `requestAnimationFrame` only.
+- **Canvas for LifeGrid** — never DOM nodes. Canvas is required for performance.
+- **No `<input type="range">`** — drag is broken in this environment. The custom `StepperSlider` component is the only slider in the app.
+- **Education displayed as calendar years** — never instruction hours ÷ 8,760 (that formula produces confusing output like "1.6 years").
+- **Grid is two-color only** — warm beige base, past weeks get a red X via `ctx.stroke()`, current week gets 1px accent border + pulse. No category colors in grid.
+- **Countdown is a single row** — `flex-nowrap`, `tabular-nums`, all 7 units. Never allow wrapping.
+- **`sessionStorage` not `localStorage`** — quiz resets per tab by design.
+- **`--dvh` custom property** for viewport height, set on mount + resize.
+- **Column count via `ResizeObserver`** on the grid container — never `window.innerWidth`.
+- **Decade labels are HTML `<span>` elements**, not canvas text.
+- **All calculation logic stays in `useLifeCalc.ts`** — do not move formulas elsewhere.
+- **No backend. No database. No new dependencies unless explicitly required.**
+
+---
+
+## Task
+
+Perform a full pre-publish audit of the codebase. Your job is to read every file in `src/`, then execute only the fixes listed below. **Do not add new features, refactor architecture, or change behavior.** Flag anything that needs human review rather than auto-fixing it.
+
+Work through the six phases in order. After completing each phase, output: `✅ Phase [N] complete — [summary of what was changed or confirmed clean]`.
+
+Stop and ask before: deleting any file, adding any new npm dependency, or changing any calculation formula in `useLifeCalc.ts`.
+
+---
+
+## Phase 1 — Dead Code & Unused Imports
+
+Scan every file in `src/` for:
+
+1. **Unused imports** — remove any import that is not referenced in that file's JSX or logic.
+2. **Commented-out code blocks** — remove any block that was left behind from a previous iteration (e.g. old GSAP calls, old DOM-node grid code, old range input code). Keep comments that explain a non-obvious decision.
+3. **Unused variables and functions** — remove any `const`, `let`, or function that is declared but never called or referenced.
+4. **Dead branches** — remove any `if/else` branch that can never be reached given the current state of the codebase.
+
+Do not touch `educationLevels.ts` data structure or any UN WPP 2024 life expectancy data object.
+
+---
+
+## Phase 2 — Console Logs & Debug Artifacts
+
+Remove all `console.log`, `console.warn`, `console.error`, and `debugger` statements from `src/`. Exception: keep any `console.error` that is inside a `catch` block handling a real runtime error (e.g. the `ipapi.co` geolocation fetch timeout fallback).
+
+---
+
+## Phase 3 — TypeScript Hygiene
+
+1. Remove all `@ts-ignore` and `@ts-nocheck` comments. If removing one causes a type error, fix the underlying type issue instead — do not suppress it.
+2. Replace all `any` types with correct specific types where the correct type is unambiguous from context. If the correct type is genuinely unclear, leave `any` and add a comment `// TODO: type this properly` so it can be reviewed.
+3. Ensure all component props have explicit TypeScript interfaces or type aliases defined.
+4. Do not change any calculation formula or runtime logic while fixing types.
+
+---
+
+## Phase 4 — Accessibility Baseline
+
+Make the following targeted accessibility fixes only. Do not redesign any component.
+
+1. **Canvas `LifeGrid`** — ensure the `<canvas>` element has `role="img"` and an `aria-label` describing it (e.g. `"Life grid showing X weeks total, Y weeks lived"`). The label should use values already available in the component's props or state.
+2. **`StepperSlider`** — ensure each stepper has `aria-label`, `aria-valuenow`, `aria-valuemin`, `aria-valuemax` on the display value element. The −/+ buttons must have `aria-label="Decrease [param name]"` and `aria-label="Increase [param name]"`.
+3. **Icon-only buttons** (lucide-react icons with no visible text label) — add `aria-label` if missing.
+4. **Color contrast** — do not change any color values. If any text-on-background combination is visually problematic, add a comment `// A11Y: low contrast — review before publish` next to the CSS class or variable.
+
+---
+
+## Phase 5 — Performance & Bundle Hygiene
+
+1. Check `package.json` for any installed dependencies that are not imported anywhere in `src/`. List them and ask for confirmation before removing.
+2. Verify the Google Fonts import in `index.html` or `index.css` loads only the three families actually in use: **Space Grotesk**, **Inter**, and **Cormorant Garamond**. Remove any extra font families or weights that are not referenced in CSS variables or Tailwind config.
+3. Check `vite.config.ts` — if there is no explicit `build.target` set, add `build: { target: 'es2020' }`. Do not change any other Vite config.
+4. Verify the `<title>` tag in `index.html` reads `Memento Mori` (or similar appropriate title). If it is still the default Vite placeholder (`Vite + React` or similar), update it to `Memento Mori — Time Audit`.
+5. Verify `index.html` has a `<meta name="description">` tag. If missing, add: `<meta name="description" content="How much of your life is actually yours? Calculate your truly free time after sleep, work, school, and everything else." />`.
+
+---
+
+## Phase 6 — Final Verification Checklist
+
+Read the following files and confirm each item. Output a checklist with ✅ or ⚠️ for each item. For any ⚠️, describe what you found.
+
+**`useLifeCalc.ts`**
+- [ ] `Free Hours = Total Life Hours − Total Taken`, clamped to `≥ 0`
+- [ ] `Free Days = Math.floor(freeHours / 24)`
+- [ ] `Free Saturdays = Math.floor(freeHours / 8)`
+- [ ] `Free Years = (freeHours / 8760).toFixed(1)`
+- [ ] `% Life That's Yours = (freeHours / totalLifeHours × 100).toFixed(1)`
+- [ ] `School Hours` uses summed instruction hours, not calendar years (calendar years are display-only)
+- [ ] No formula divides school instruction hours by 8,760 to produce a display value
+- [ ] `StepperSlider` float guard present: `Math.round(value * 10) / 10` on increment/decrement
+
+**`LifeGrid.tsx`**
+- [ ] Column count derived from `ResizeObserver` on container — not `window.innerWidth`
+- [ ] Past weeks drawn with red X via `ctx.stroke()`, not filled color
+- [ ] Decade labels are HTML `<span>` elements outside the canvas
+- [ ] Canvas uses `devicePixelRatio` scaling
+
+**`Countdown.tsx`**
+- [ ] Countdown row uses `flex-nowrap` and `tabular-nums`
+- [ ] All 7 units present: Years · Months · Weeks · Days · Hours · Mins · Secs
+
+**`index.css` / theme**
+- [ ] `--dvh` custom property is set on mount and on resize
+- [ ] All 11 category color tokens present: Sleep, Work, School, Eating, Grooming, Chores, Commute, Social Media, TV, Streaming, Free
+
+**`index.html`**
+- [ ] `<title>` is not the default Vite placeholder
+- [ ] `<meta name="description">` is present
+- [ ] No hardcoded API keys or tokens anywhere in `src/` or `index.html`
+
+---
+
+## What NOT to Do
+
+- MUST NOT reintroduce `<input type="range">` anywhere
+- MUST NOT reintroduce GSAP or any animation library
+- MUST NOT move the LifeGrid to DOM nodes
+- MUST NOT change the life expectancy data source or override the UN WPP 2024 hardcoded object
+- MUST NOT change `sessionStorage` to `localStorage`
+- MUST NOT add a backend, database, or API endpoint
+- MUST NOT add new npm packages without asking first
+- MUST NOT change any calculation formula without asking first
+- MUST NOT remove the `ipapi.co` geolocation fetch or its 2-second timeout + fallback logic

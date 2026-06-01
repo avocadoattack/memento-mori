@@ -4,10 +4,25 @@ import { LIFE_EXPECTANCY } from '../lib/lifeExpectancy';
 import { EDUCATION_LEVELS } from '../lib/educationLevels';
 import { Info, User, Moon, Briefcase, GraduationCap, Coffee, Car, Smartphone } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import type { LifeCalcState } from '../hooks/useLifeCalc';
 
 interface Props {
-  state: any;
+  state: LifeCalcState;
   lifeExpectancy: number;
+}
+
+interface ControlRowProps {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (v: number) => void;
+  color: string;
+  tooltip?: string;
+  name: string;
+  sublabel?: string;
+  unit?: string;
 }
 
 export function ControlsPanel({ state, lifeExpectancy }: Props) {
@@ -22,7 +37,7 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
 
   const ControlRow = ({
     label, value, min, max, step, onChange, color, tooltip, name, sublabel, unit
-  }: any) => {
+  }: ControlRowProps) => {
     const isOverridden = state.overrides[name];
     const isAuto = ['workHoursPerWeek', 'workStartAge', 'retirementAge', 'socialMediaHoursPerDay', 'tvHoursPerDay', 'streamingHoursPerDay', 'groomingHoursPerDay'].includes(name) && !isOverridden;
 

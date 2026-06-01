@@ -102,6 +102,11 @@ export function StepperSlider({
             style={{ color: isModified ? categoryColor : undefined, opacity: isModified ? 1 : 0.7 }}
             onClick={startEdit}
             title="Click to type a value"
+            role="spinbutton"
+            aria-label={label}
+            aria-valuenow={value}
+            aria-valuemin={min}
+            aria-valuemax={max}
           >
             {fmt(value)}
             {unit && <span style={{ fontSize: '11px', opacity: 0.5, fontWeight: 400 }}>{unit}</span>}
@@ -116,6 +121,7 @@ export function StepperSlider({
           onPointerDown={e => { e.preventDefault(); startHold(-1); }}
           onPointerUp={stopHold}
           onPointerLeave={stopHold}
+          aria-label={`Decrease ${label}`}
         >−</button>
 
         <div className="relative flex-1 h-1.5 bg-foreground/10 rounded-full overflow-hidden">
@@ -131,6 +137,7 @@ export function StepperSlider({
           onPointerDown={e => { e.preventDefault(); startHold(1); }}
           onPointerUp={stopHold}
           onPointerLeave={stopHold}
+          aria-label={`Increase ${label}`}
         >+</button>
       </div>
 

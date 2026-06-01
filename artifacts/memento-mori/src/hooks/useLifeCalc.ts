@@ -307,3 +307,7 @@ export function useLifeCalc() {
     stats,
   };
 }
+
+export type LifeCalc = ReturnType<typeof useLifeCalc>;
+export type LifeCalcState = LifeCalc['state'];
+export type LifeCalcStats = LifeCalc['stats'];
