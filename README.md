@@ -4,7 +4,7 @@
 
 An interactive memento mori that calculates how much of your life is genuinely discretionary after subtracting sleep, work, education, grooming, commuting, and habitual time-wasting. Grounded in real population data. Designed to be uncomfortable.
 
-**[Live Demo →](https://memento-mori-calc.replit.app)**
+**[Live Demo →](https://memento-mori-4bm.pages.dev/)**
 
 ---
 
@@ -31,6 +31,7 @@ Most "life in weeks" visualizations show you how many weeks remain. This one goe
 | Animations | CSS keyframes + `requestAnimationFrame` |
 | Icons | lucide-react |
 | Fonts | Space Grotesk · Inter · Cormorant Garamond |
+| Deployment | Cloudflare Pages |
 | Country detection | `ipapi.co/json/` → Intl timezone fallback |
 | Persistence | `sessionStorage` |
 | Data | UN World Population Prospects 2024 (hardcoded) |
@@ -80,6 +81,9 @@ Then open [http://localhost:5173](http://localhost:5173).
 ## Roadmap
 
 - [x] Mobile layout refinements
+- [ ] Add authorship credit and link to avocadoattack website
+- [ ] Create subdomain and connect in CF Pages
+- [ ] Add GH repo link to the live site
 - [ ] Share / export (shareable link with encoded parameters)
 - [ ] Localization (non-US defaults for commute, chores, eating)
 - [ ] Healthy life expectancy mode (HALE toggle)
