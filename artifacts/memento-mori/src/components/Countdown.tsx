@@ -100,9 +100,9 @@ export function Countdown({ currentAge, lifeExpectancy, freeHoursRemaining, pctL
   ];
 
   return (
-    <div className="flex flex-col items-center gap-8 w-full max-w-4xl mx-auto">
+    <div className="flex flex-col items-center gap-8 max-md:gap-4 w-full max-w-4xl mx-auto">
       <div className="text-center">
-        <h3 className="text-xs font-bold uppercase tracking-widest opacity-60 mb-6">Countdown to Expected Death</h3>
+        <h3 className="text-xs font-bold uppercase tracking-widest opacity-60 mb-6 max-md:mb-3">Countdown to Expected Death</h3>
         <div
           className="text-[var(--accent)] font-mono font-bold tracking-tighter flex-nowrap max-md:flex-wrap max-md:gap-y-3"
           style={{
@@ -160,8 +160,8 @@ export function Countdown({ currentAge, lifeExpectancy, freeHoursRemaining, pctL
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-        <div className="flex flex-col bg-card rounded-none border border-border shadow-sm text-center" style={{ padding: '32px', minHeight: '160px' }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-md:gap-4 w-full">
+        <div className="flex flex-col bg-card rounded-none border border-border shadow-sm text-center max-md:!p-5 max-md:!min-h-[120px]" style={{ padding: '32px', minHeight: '160px' }}>
           <div className="text-xs font-bold uppercase tracking-widest opacity-60 mb-2">Free Years Remaining</div>
           <div ref={yearsRef} className="font-bold font-mono text-accent leading-none mb-3" style={{ fontSize: 'clamp(36px, 5vw, 56px)' }}>
             {(Math.max(0, freeHoursRemaining) / 8760).toFixed(1)}
@@ -169,7 +169,7 @@ export function Countdown({ currentAge, lifeExpectancy, freeHoursRemaining, pctL
           <div className="text-xs uppercase tracking-widest opacity-40 font-bold mt-auto pt-2 border-t border-border">Years of life that are truly yours</div>
         </div>
 
-        <div className="flex flex-col bg-card rounded-none border border-border shadow-sm text-center" style={{ padding: '32px', minHeight: '160px' }}>
+        <div className="flex flex-col bg-card rounded-none border border-border shadow-sm text-center max-md:!p-5 max-md:!min-h-[120px]" style={{ padding: '32px', minHeight: '160px' }}>
           <div className="text-xs font-bold uppercase tracking-widest opacity-60 mb-2">Life Already Lived</div>
           <div ref={pctRef} className="font-bold font-mono text-foreground leading-none mb-3" style={{ fontSize: 'clamp(36px, 5vw, 56px)' }}>
             {pctLifeBehind.toFixed(1)}%

@@ -83,7 +83,7 @@ export default function Home() {
       <ThemeToggle />
       {/* Hero Section — full viewport height, flex column; chevron pinned to bottom in-flow */}
       <div
-        className="px-4 w-full max-w-[1200px] mx-auto"
+        className="px-4 w-full max-w-[1200px] mx-auto max-md:!h-auto max-md:min-h-[100svh] max-md:!pb-8"
         style={{
           height: 'calc(var(--dvh, 1dvh) * 100)',
           minHeight: '-webkit-fill-available',
@@ -96,7 +96,7 @@ export default function Home() {
         }}
       >
         {/* Main content block — grows to fill space, content vertically centered; min-height:0 prevents overflow pushing chevron off-screen */}
-        <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+        <div className="max-md:!overflow-visible max-md:!justify-start" style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
           <div className="text-center" style={{ marginBottom: 'clamp(20px, 3vh, 48px)' }}>
             <h1 className="font-bold font-mono tracking-tighter" style={{ fontSize: 'clamp(36px, 10vw, 120px)', marginBottom: '8px' }}>
               MEMENTO MORI
@@ -134,7 +134,8 @@ export default function Home() {
       {/* Grid Section — clear separation from hero */}
       <div
         id="life-grid"
-        className="w-full max-w-[1400px] mx-auto box-border overflow-x-auto pt-16 pb-12 pl-12 pr-6 max-md:pt-10 max-md:pl-2 max-md:pr-2"
+        className="w-full max-w-[1400px] mx-auto overflow-x-auto max-md:!pt-10 max-md:!pl-2 max-md:!pr-2"
+        style={{ paddingTop: '64px', paddingBottom: '48px', paddingLeft: '48px', paddingRight: '24px', boxSizing: 'border-box' }}
       >
         <LifeGrid state={state} lifeExpectancy={lifeExpectancy} />
       </div>

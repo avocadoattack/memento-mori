@@ -138,7 +138,7 @@ export function ControlsPanel({ state, lifeExpectancy }: Props) {
 
         <SectionTitle icon={Briefcase}>Work</SectionTitle>
         <ControlRow name="workHoursPerWeek" label="Hours per week" value={state.workHoursPerWeek} min={0} max={80} step={1} onChange={state.setWorkHoursPerWeek} color="var(--cat-work)" unit="h/week" />
-        <div className="grid grid-cols-2 gap-4 mt-2 mb-2">
+        <div className="grid grid-cols-2 gap-4 mt-2 mb-2 max-md:grid-cols-1">
           <ControlRow name="workStartAge" label="Start Age" value={state.workStartAge} min={16} max={40} step={1} onChange={state.setWorkStartAge} color="var(--cat-work)" />
           <ControlRow name="retirementAge" label="Retire Age" value={state.retirementAge} min={40} max={85} step={1} onChange={state.setRetirementAge} color="var(--cat-work)" />
         </div>

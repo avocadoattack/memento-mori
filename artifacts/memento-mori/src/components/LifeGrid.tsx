@@ -192,8 +192,8 @@ export function LifeGrid({ state, lifeExpectancy }: Props) {
     };
 
     const setup = () => {
-      const isMobile = containerWidth < 640;
-      sqSize       = isMobile ? 5 : 9;
+      const isMobile = containerWidth < 500;
+      sqSize       = isMobile ? 7 : 9;
       totalSqWidth = sqSize + SQ_GAP;
       rowsCount    = Math.ceil(lifeExpectancy);
       canvasWidth  = COLS * totalSqWidth;

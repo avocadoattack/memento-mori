@@ -1,0 +1,125 @@
+# Memento Mori — Mobile Fix Pass 2 (Targeted Corrections)
+
+## Context (carry forward — do not revert these decisions)
+- Framework: React + Vite (TypeScript) + Tailwind CSS
+- NO GSAP, NO `<input type="range">`, Canvas for LifeGrid only
+- Countdown stays flex-nowrap on desktop (≥768px); wrapping on mobile is acceptable
+- Education displayed as calendar years only
+- Grid: two-color, warm beige + red X on past weeks, canvas only
+- sessionStorage, --dvh, ResizeObserver on grid container
+- Decade labels are HTML `<span>` elements — not canvas text
+- All calculation logic stays in useLifeCalc.ts — do not touch it
+- Stepper increments: 0.1 h/day for most fields. Math.round(value * 10) / 10 guard is required
+
+---
+
+## Goal
+
+Fix 6 specific regressions introduced in the previous mobile pass. Do not touch anything else.
+
+After each file, output: ✅ [filename] — [what was fixed]
+
+Stop and ask before modifying any file not listed below, or before touching useLifeCalc.ts.
+
+---
+
+## Files to Touch
+
+Only these:
+
+1. `src/components/Countdown.tsx`
+2. `src/pages/Home.tsx`
+3. `src/components/LifeGrid.tsx`
+4. `src/components/StepperSlider.tsx`
+5. `src/components/ControlsPanel.tsx`
+
+---
+
+## Fix 1 — LifeGrid off-center on DESKTOP (`src/pages/Home.tsx` + `src/components/ControlsPanel.tsx`)
+
+**Root cause:** The previous pass added `max-md:w-full` and/or `max-md:p-4` to ControlsPanel or its container in Home.tsx. This altered the flex/grid layout of the life grid section even at desktop widths because the containing block's dimensions changed.
+
+**Fix:**
+- In `Home.tsx`: locate the section containing the LifeGrid canvas. If any padding, margin, or width class was added to that container in the previous pass, remove it. The LifeGrid container must be centered exactly as it was before the mobile pass.
+- In `ControlsPanel.tsx`: the `max-md:` classes are fine to keep, but verify that the container that wraps BOTH the ControlsPanel AND the LifeGrid in Home.tsx has not had its alignment changed. The LifeGrid should be centered in its container at all viewport widths.
+- If the grid uses absolute positioning for decade label spans, those are computed relative to the canvas container — ensure that container has no added horizontal padding or margin that would shift it right on desktop.
+- DO NOT change any bare (non-prefixed) Tailwind classes that existed before the mobile pass.
+
+---
+
+## Fix 2 — MEMENTO MORI title hidden on mobile portrait + "Life Already Lived" card cut off (`src/pages/Home.tsx`)
+
+**Root cause:** The hero section is a fixed-height flex column (`height: 100dvh` via `--dvh`). After the previous pass:
+- Countdown now wraps to 2 rows on mobile (adding ~60–80px of height)
+- Two stat cards stack vertically (adding height)
+- The combined content now overflows the viewport height
+- When a flex column overflows with `justify-between` or similar, content at the top gets pushed off the top edge, hiding the MEMENTO MORI title, and content at the bottom gets clipped
+
+**Fix:**
+- On mobile (`max-md:`): change the hero section from fixed viewport height to `min-height: calc(var(--dvh, 1svh) * 100)` with `overflow-y: auto` OR simply add `max-md:h-auto max-md:min-h-[100svh] max-md:pb-8` to the hero container so it can grow taller than the viewport on mobile
+- On mobile: reduce spacing/gaps between hero elements (`max-md:gap-4` or similar) so the title, subtitle, countdown, and cards all fit comfortably
+- The MEMENTO MORI title must be the first visible element on mobile when the page loads — it must NOT be clipped or off-screen
+- The "Life Already Lived" card (second hero card) must be fully visible without scrolling, or at minimum must not be clipped — it can be partially below the fold but must not be cut in half
+- On DESKTOP: hero height behavior is UNCHANGED — do not touch any bare height/min-height classes
+
+---
+
+## Fix 3 — StepperSlider increments 0.2 instead of 0.1 on mobile (`src/components/StepperSlider.tsx`)
+
+**Root cause:** The previous pass likely added a `step` attribute to the internal value input field (e.g. `step="0.2"`) when sizing the field with `max-md:min-w-[56px]`, or introduced a double-fire on touch events.
+
+**Fix:**
+- Locate any `step` attribute that was added to the input field in StepperSlider — remove it entirely. The step logic is controlled by the increment/decrement handlers, not the input element's step attribute.
+- Verify the `onIncrement` and `onDecrement` handlers use `Math.round(value * 10) / 10` to prevent floating-point drift. If this guard is missing, add it.
+- Check that the `onClick` or `onPointerDown` handlers on the − and + buttons do not fire twice on touch (once for `touchstart` and once for `touchend` synthesized as `click`). If double-firing is the issue, add `e.preventDefault()` to the touch event handlers.
+- The step size must be identical on desktop and mobile. Keep the `max-md:min-h-[44px] max-md:min-w-[44px]` touch target sizing — only fix the increment behavior.
+
+---
+
+## Fix 4 — LifeGrid square size too small on mobile portrait (`src/components/LifeGrid.tsx`)
+
+**Root cause:** The column count algorithm picks a divisor of 520 that fits the container width. On a ~390px container, it likely chooses a column count that results in squares of ~5–6px — too small to be visually impactful.
+
+**Fix:**
+- Add a mobile-aware minimum square size. In the column count calculation (inside the ResizeObserver callback), add a constraint:
+  - Compute `squareSize` as `containerWidth / columns`
+  - On mobile (containerWidth < 500px), enforce a minimum `squareSize` of **7px** (including gap)
+  - Choose the largest valid divisor of 520 that satisfies this minimum square size
+  - If no standard divisor satisfies it, fall back to the next valid smaller column count even if it's not a perfect divisor of 520 — visual correctness on mobile matters more than perfect decade alignment
+- This will result in fewer columns and bigger squares on narrow screens, making the grid legible
+- Do NOT change canvas rendering colors, the red X logic, the current-week pulse, or the coffin emoji positioning
+- Desktop behavior (containerWidth ≥ 768px) is UNCHANGED
+
+---
+
+## Fix 5 — Start Age / Retire Age steppers jammed on mobile (`src/components/ControlsPanel.tsx`)
+
+**Root cause:** The Work section has Start Age and Retire Age steppers displayed side-by-side in a flex row. On mobile this makes each stepper too narrow.
+
+**Fix:**
+- In the Work section of ControlsPanel, locate the row that contains both the Start Age stepper and the Retire Age stepper side by side
+- Add `max-md:flex-col max-md:gap-4` to that row container so the two steppers stack vertically on mobile
+- Each stepper should then be full-width on mobile (`max-md:w-full` on the stepper wrapper if needed)
+- On desktop: the side-by-side layout is UNCHANGED
+
+---
+
+## Hard Constraints
+
+- NEVER modify useLifeCalc.ts or educationLevels.ts
+- NEVER change any existing bare Tailwind class — only add `max-md:` overrides or fix incorrect additions from the previous pass
+- NEVER add GSAP, new dependencies, or `<input type="range">`
+- NEVER change desktop layout at ≥768px — every fix must be scoped to mobile only EXCEPT Fix 1 (the desktop off-center bug which IS a desktop regression that must be corrected)
+- NEVER change stepper step sizes or calculation logic
+
+---
+
+## Definition of Done
+
+- MEMENTO MORI title is the first visible element in the hero on a 390px portrait screen
+- Hero section shows all content (title, subtitle, countdown, both cards) without any element being clipped or hidden
+- Countdown wraps to 2 rows on mobile without overflow
+- Steppers increment by 0.1 on mobile (same as desktop)
+- LifeGrid squares are at least 7px on a 390px screen
+- Start Age and Retire Age stack vertically on mobile
+- Desktop layout at ≥768px is pixel-identical to before the previous mobile pass (LifeGrid centered)
