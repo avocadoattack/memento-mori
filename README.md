@@ -4,7 +4,7 @@
 
 An interactive memento mori that calculates how much of your life is genuinely discretionary after subtracting sleep, work, education, grooming, commuting, and habitual time-wasting. Grounded in real population data. Designed to be uncomfortable.
 
-**[Live Demo →](#)** *(https://memento-mori-calc.replit.app)*
+**[Live Demo →](https://memento-mori-calc.replit.app))**
 
 ---
 
@@ -79,7 +79,7 @@ Then open [http://localhost:5173](http://localhost:5173).
 
 ## Roadmap
 
-- [ x ] Mobile layout refinements
+- [x] Mobile layout refinements
 - [ ] Share / export (shareable link with encoded parameters)
 - [ ] Localization (non-US defaults for commute, chores, eating)
 - [ ] Healthy life expectancy mode (HALE toggle)
