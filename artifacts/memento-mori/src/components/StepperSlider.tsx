@@ -24,9 +24,8 @@ export function StepperSlider({
 }: StepperSliderProps) {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
-  const intervalRef    = useRef<ReturnType<typeof setInterval> | null>(null);
-  const timeoutRef     = useRef<ReturnType<typeof setTimeout>  | null>(null);
-  const touchActiveRef = useRef(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeoutRef  = useRef<ReturnType<typeof setTimeout>  | null>(null);
 
   const pct = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
 
@@ -114,11 +113,9 @@ export function StepperSlider({
         <button
           className="flex-none w-8 h-8 max-md:min-h-[44px] max-md:min-w-[44px] flex items-center justify-center rounded font-bold text-base max-md:text-lg select-none border transition-colors hover:opacity-80 active:scale-95"
           style={{ borderColor: categoryColor, color: categoryColor }}
-          onMouseDown={() => { if (!touchActiveRef.current) startHold(-1); }}
-          onMouseUp={stopHold}
-          onMouseLeave={stopHold}
-          onTouchStart={e => { e.preventDefault(); touchActiveRef.current = true; startHold(-1); }}
-          onTouchEnd={() => { stopHold(); setTimeout(() => { touchActiveRef.current = false; }, 300); }}
+          onPointerDown={e => { e.preventDefault(); startHold(-1); }}
+          onPointerUp={stopHold}
+          onPointerLeave={stopHold}
         >−</button>
 
         <div className="relative flex-1 h-1.5 bg-foreground/10 rounded-full overflow-hidden">
@@ -131,11 +128,9 @@ export function StepperSlider({
         <button
           className="flex-none w-8 h-8 max-md:min-h-[44px] max-md:min-w-[44px] flex items-center justify-center rounded font-bold text-base max-md:text-lg select-none border transition-colors hover:opacity-80 active:scale-95"
           style={{ borderColor: categoryColor, color: categoryColor }}
-          onMouseDown={() => { if (!touchActiveRef.current) startHold(1); }}
-          onMouseUp={stopHold}
-          onMouseLeave={stopHold}
-          onTouchStart={e => { e.preventDefault(); touchActiveRef.current = true; startHold(1); }}
-          onTouchEnd={() => { stopHold(); setTimeout(() => { touchActiveRef.current = false; }, 300); }}
+          onPointerDown={e => { e.preventDefault(); startHold(1); }}
+          onPointerUp={stopHold}
+          onPointerLeave={stopHold}
         >+</button>
       </div>
 
